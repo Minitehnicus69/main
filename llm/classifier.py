@@ -122,4 +122,4 @@ if __name__ == "__main__":
     model = load_trained_model()
     dummy_wafer = np.random.rand(26, 26).tolist()
     res = predict_wafer(dummy_wafer)
-    print("Test predicție model CNN:", res)
+    print("Test predictie model CNN:", res)
