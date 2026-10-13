@@ -1,8 +1,8 @@
 # llm/rag.py
 import os
 import sys
+
 import faiss
-import numpy as np
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 
@@ -59,7 +59,7 @@ DEFAULT_KNOWLEDGE_DOCS = [
     }
 ]
 
-def build_index(pdf_paths: list[str] = None, chunk_size_words: int = 350):
+def build_index(pdf_paths: list[str] | None = None, chunk_size_words: int = 350):
     """
     Citește PDF-urile, extrage fragmente pe pagini și construiește indexul FAISS.
     Dacă nu există fișiere PDF, populează indexul cu documentația tehnică de bază.
@@ -105,13 +105,12 @@ def cauta_manual(query: str, top_k: int = 1) -> list[dict]:
     """
     Returnează fragmentele cele mai relevante împreună cu metadatele de citare (doc, pagina, text).
     """
-    global index
     if index is None:
         build_index([])
 
     q_vec = embedder.encode([query], convert_to_numpy=True)
     faiss.normalize_L2(q_vec)
-    distances, indices = index.search(q_vec, top_k)
+    _distances, indices = index.search(q_vec, top_k)
 
     results = []
     for idx in indices[0]:
@@ -120,7 +119,7 @@ def cauta_manual(query: str, top_k: int = 1) -> list[dict]:
     return results
 
 if __name__ == "__main__":
-    print("Inițializare și testare modul RAG...")
+    print("Initializare si testare modul RAG...")
     build_index([])
     test_queries = ["Center", "Edge-Ring", "Scratch"]
     for q in test_queries:

@@ -1,9 +1,10 @@
 # llm/classifier.py
 import os
 import sys
-import torch
-import torch.nn as nn
+
 import numpy as np
+import torch
+from torch import nn
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -15,7 +16,7 @@ class WaferCNN(nn.Module):
     Arhitectura CNN compatibilă cu structura tensorilor din weights.pt.
     4 blocuri convoluționale urmate de Global Average Pooling și clasificator liniar.
     """
-    def __init__(self, num_classes=9):
+    def __init__(self, num_classes: int = 9):
         super().__init__()
         self.features = nn.Sequential(
             # Bloc 0: Conv 1 -> 16
@@ -49,15 +50,15 @@ class WaferCNN(nn.Module):
         )
         self.fc = nn.Linear(128, num_classes)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         for block in self.features:
             x = block(x)
         x = x.view(x.size(0), -1)
         return self.fc(x)
 
-_global_model = None
+_global_model: WaferCNN | None = None
 
-def load_trained_model(weights_path: str = None) -> WaferCNN:
+def load_trained_model(weights_path: str | None = None) -> WaferCNN:
     """
     Încarcă ponderile din fișierul weights.pt în modelul CNN.
     """

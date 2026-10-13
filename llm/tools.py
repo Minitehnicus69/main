@@ -1,10 +1,17 @@
 # llm/tools.py
 import sys
-from rag import cauta_manual
-from classifier import predict_wafer, load_trained_model
+from pathlib import Path
+
+# Asigură rezolvarea modulelor locale indiferent de directorul curent de lucru
+current_dir = str(Path(__file__).resolve().parent)
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
+
+from classifier import predict_wafer
+from rag import cauta_manual
 
 # Baza de date pentru testare și integrare
 MOCK_CLASSIFICATION_DB = {
@@ -17,7 +24,7 @@ MOCK_CLASSIFICATION_DB = {
 }
 
 # 1. Implementările funcțiilor (Unelte)
-def tool_clasifica(wafer_id: str, wafer_matrix: list = None) -> dict:
+def tool_clasifica(wafer_id: str, wafer_matrix: list | None = None) -> dict:
     """
     Obține clasa defectului și scorul de încredere pentru wafer din modelul CNN
     (folosind weights.pt dacă se furnizează o matrice a wafer-ului, altfel din registrul lotului).
@@ -26,7 +33,7 @@ def tool_clasifica(wafer_id: str, wafer_matrix: list = None) -> dict:
         try:
             return predict_wafer(wafer_matrix)
         except Exception as e:
-            print(f"[tool_clasifica] Eroare la inferența CNN: {e}")
+            print(f"[tool_clasifica] Eroare la inferenta CNN: {e}")
 
     return MOCK_CLASSIFICATION_DB.get(wafer_id, {"class": "Center", "confidence": 0.85})
 
@@ -35,7 +42,7 @@ def tool_verifica_drift(lot_id: str) -> dict:
     Verifică dacă s-a declanșat o alarmă de drift (același defect repetat în lotul curent:
     minim 3 din ultimele 5 wafere cu aceeași clasă defectă).
     """
-    if lot_id == "LOT-CRITIC" or lot_id == "L-02":
+    if lot_id in ("LOT-CRITIC", "L-02"):
         return {"lot_id": lot_id, "alarm": True, "repeated_class": "Center", "count": 3}
     return {"lot_id": lot_id, "alarm": False, "repeated_class": "none", "count": 0}
 
@@ -176,4 +183,4 @@ if __name__ == "__main__":
     print("2. verifica_drift(LOT-CRITIC):", tool_verifica_drift("LOT-CRITIC"))
     print("3. gaseste_similare(W-106):", tool_gaseste_similare("W-106"))
     print("4. cauta_manual(Center):", tool_cauta_manual("Center"))
-    print("Toate cele 4 unelte sunt funcționale!")
+    print("Toate cele 4 unelte sunt functionale!")

@@ -1,8 +1,13 @@
-# llm/agent.py
+import json
 import os
 import sys
-import json
 from pathlib import Path
+
+# Asigură rezolvarea modulelor locale indiferent de directorul curent de lucru
+current_dir = str(Path(__file__).resolve().parent)
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
 from dotenv import load_dotenv
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -13,12 +18,12 @@ env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 from tools import (
-    TOOL_ROUTER,
     OPENAI_TOOLS_DEFINITIONS,
+    TOOL_ROUTER,
+    tool_cauta_manual,
     tool_clasifica,
-    tool_verifica_drift,
     tool_gaseste_similare,
-    tool_cauta_manual
+    tool_verifica_drift,
 )
 
 # Configurare API externă conform cerințelor utilizatorului
@@ -36,7 +41,7 @@ if causes_file.exists():
     except Exception as e:
         print(f"[agent] Avertisment la citirea causes.json: {e}")
 
-SYSTEM_PROMPT = f"""Ești un agent expert în diagnosticarea procesului de fabricație a wafer-elor de siliciu (baza de date WM-811K).
+SYSTEM_PROMPT = """Ești un agent expert în diagnosticarea procesului de fabricație a wafer-elor de siliciu (baza de date WM-811K).
 Modele cunoscute de defecte (9 clase învățate din modelul CNN weights.pt):
 - Center: defecte centrale cauzate de depunere CVD/PVD neuniformă sau presiune asimetrică CMP.
 - Donut: profil termic inelar sau flux turbulent de gaz în camera CVD.
@@ -53,11 +58,11 @@ Instrucțiuni de operare:
 2. Dacă nivelul de încredere este scăzut (< 0.70) sau defectul este 'necunoscut', apelează 'gaseste_similare'.
 3. Dacă apare un defect identificat, apelează 'cauta_manual' pentru a găsi instrucțiunile specifice de intervenție.
 4. Răspunsul FINAL trebuie să fie STRICT un obiect JSON valid, fără text sau markdown suplimentar:
-{{
+{
   "explicatie": "Descrierea defectului, nivelul de încredere și starea de drift din lot.",
   "actiune": "Măsura tehnică recomandată pentru operator/inginer.",
   "surse": ["nume_document.pdf (p. X)", "causes.json"]
-}}"""
+}"""
 
 def _execute_local_reasoning(wafer_id: str, lot_id: str) -> dict:
     """
@@ -88,7 +93,7 @@ def _execute_local_reasoning(wafer_id: str, lot_id: str) -> dict:
 
     # Scenariul 3: Out-of-Distribution / Necunoscut
     if c_class == "necunoscut" or conf < 0.40:
-        similar = tool_gaseste_similare(wafer_id)
+        tool_gaseste_similare(wafer_id)
         return {
             "explicatie": f"Wafer-ul {wafer_id} prezintă un tipar structural necunoscut (încredere redusă {conf*100:.1f}%). S-au căutat referințe istorice similare.",
             "actiune": "Marcare wafer pentru analiză OOD și etichetare manuală de către inginerul de proces.",
@@ -195,8 +200,7 @@ def analyze(wafer_json: dict) -> dict:
             text_clean = content.strip()
             if text_clean.startswith("```"):
                 text_clean = text_clean.split("```")[1]
-                if text_clean.startswith("json"):
-                    text_clean = text_clean[4:]
+                text_clean = text_clean.removeprefix("json")
             try:
                 res_json = json.loads(text_clean.strip())
                 if isinstance(res_json, dict) and {"explicatie", "actiune", "surse"}.issubset(res_json.keys()):
@@ -205,8 +209,8 @@ def analyze(wafer_json: dict) -> dict:
                 pass
             break
 
-    except Exception as e:
-        # Fallback silențios către raționamentul determinist dacă serverul extern este inaccesibil
+    except Exception:
+        # Fallback catre rationamentul determinist daca serverul extern este inaccesibil
         pass
 
     # Execuție prin motorul ReAct determinist
