@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "title": "Defect izolat Edge-Ring",
+    "input": {
+      "wafer_id": "W-101",
+      "lot_id": "L-01"
+    },
+    "expected_type": "Edge-Ring izolat, verificare focus ring la final de tură"
+  },
+  {
+    "id": 2,
+    "title": "Alarmă critică de drift (Center repetat)",
+    "input": {
+      "wafer_id": "W-102",
+      "lot_id": "LOT-CRITIC"
+    },
+    "expected_type": "Alarmă drift activă; oprire imediată a camerei CVD"
+  },
+  {
+    "id": 3,
+    "title": "Pattern necunoscut (Out-of-Distribution)",
+    "input": {
+      "wafer_id": "W-103",
+      "lot_id": "L-03"
+    },
+    "expected_type": "Defect necunoscut; marcare pentru etichetare de către inginer"
+  },
+  {
+    "id": 4,
+    "title": "Zgârietură mecanică (Scratch)",
+    "input": {
+      "wafer_id": "W-104",
+      "lot_id": "L-04"
+    },
+    "expected_type": "Defect Scratch; inspectare braț robotizat și traseu de transfer"
+  },
+  {
+    "id": 5,
+    "title": "Wafer nominal curat (None)",
+    "input": {
+      "wafer_id": "W-105",
+      "lot_id": "L-05"
+    },
+    "expected_type": "Fără defect; autorizare trecere la următorul pas"
+  },
+  {
+    "id": 6,
+    "title": "Încredere scăzută cu validare prin similaritate",
+    "input": {
+      "wafer_id": "W-106",
+      "lot_id": "L-06"
+    },
+    "expected_type": "Apelare gaseste_similare pentru confirmarea clasei ambigue"
+  }
+]
