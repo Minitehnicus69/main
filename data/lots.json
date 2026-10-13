@@ -1,0 +1,622 @@
+[
+ {
+  "lot": "A",
+  "wafere": [
+   {
+    "wafer_id": "A_w01",
+    "history_id": 29672,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w02",
+    "history_id": 26910,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w03",
+    "history_id": 26940,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w04",
+    "history_id": 27226,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w05",
+    "history_id": 27033,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w06",
+    "history_id": 29875,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w07",
+    "history_id": 29598,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w08",
+    "history_id": 27015,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w09",
+    "history_id": 26175,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w10",
+    "history_id": 30071,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w11",
+    "history_id": 27856,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w12",
+    "history_id": 29498,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w13",
+    "history_id": 25795,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w14",
+    "history_id": 28398,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w15",
+    "history_id": 26113,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w16",
+    "history_id": 28012,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w17",
+    "history_id": 28630,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w18",
+    "history_id": 29116,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w19",
+    "history_id": 29617,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w20",
+    "history_id": 29382,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w21",
+    "history_id": 29986,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w22",
+    "history_id": 30220,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w23",
+    "history_id": 25545,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w24",
+    "history_id": 28924,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "A_w25",
+    "history_id": 26641,
+    "echipament": "ETCH-01",
+    "clasa_reala": "none"
+   }
+  ]
+ },
+ {
+  "lot": "B",
+  "wafere": [
+   {
+    "wafer_id": "B_w01",
+    "history_id": 29560,
+    "echipament": "ETCH-03",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "B_w02",
+    "history_id": 30367,
+    "echipament": "ETCH-03",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "B_w03",
+    "history_id": 28091,
+    "echipament": "ETCH-03",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "B_w04",
+    "history_id": 27849,
+    "echipament": "ETCH-03",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "B_w05",
+    "history_id": 25697,
+    "echipament": "ETCH-03",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "B_w06",
+    "history_id": 30104,
+    "echipament": "ETCH-03",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "B_w07",
+    "history_id": 26226,
+    "echipament": "ETCH-03",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "B_w08",
+    "history_id": 4010,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w09",
+    "history_id": 1488,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w10",
+    "history_id": 13019,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w11",
+    "history_id": 416,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w12",
+    "history_id": 25318,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w13",
+    "history_id": 22719,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w14",
+    "history_id": 6166,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w15",
+    "history_id": 3241,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w16",
+    "history_id": 11256,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w17",
+    "history_id": 3930,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w18",
+    "history_id": 6257,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w19",
+    "history_id": 16415,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w20",
+    "history_id": 10118,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w21",
+    "history_id": 11573,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w22",
+    "history_id": 10878,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w23",
+    "history_id": 4822,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w24",
+    "history_id": 7567,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   },
+   {
+    "wafer_id": "B_w25",
+    "history_id": 505,
+    "echipament": "ETCH-03",
+    "clasa_reala": "Edge-Ring"
+   }
+  ]
+ },
+ {
+  "lot": "C",
+  "wafere": [
+   {
+    "wafer_id": "C_w01",
+    "history_id": 28943,
+    "echipament": "CMP-02",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "C_w02",
+    "history_id": 29867,
+    "echipament": "CMP-02",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "C_w03",
+    "history_id": 28577,
+    "echipament": "CMP-02",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "C_w04",
+    "history_id": 28510,
+    "echipament": "CMP-02",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "C_w05",
+    "history_id": 28506,
+    "echipament": "CMP-02",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "C_w06",
+    "history_id": 27456,
+    "echipament": "CMP-02",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "C_w07",
+    "history_id": 26059,
+    "echipament": "CMP-02",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "C_w08",
+    "history_id": 28731,
+    "echipament": "CMP-02",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "C_w09",
+    "history_id": 25815,
+    "echipament": "CMP-02",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "C_w10",
+    "history_id": 28818,
+    "echipament": "CMP-02",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "C_w11",
+    "history_id": 27322,
+    "echipament": "CMP-02",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "C_w12",
+    "history_id": 28052,
+    "echipament": "CMP-02",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "C_w13",
+    "history_id": 16263,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   },
+   {
+    "wafer_id": "C_w14",
+    "history_id": 15220,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   },
+   {
+    "wafer_id": "C_w15",
+    "history_id": 15948,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   },
+   {
+    "wafer_id": "C_w16",
+    "history_id": 15699,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   },
+   {
+    "wafer_id": "C_w17",
+    "history_id": 15765,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   },
+   {
+    "wafer_id": "C_w18",
+    "history_id": 9075,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   },
+   {
+    "wafer_id": "C_w19",
+    "history_id": 14769,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   },
+   {
+    "wafer_id": "C_w20",
+    "history_id": 15212,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   },
+   {
+    "wafer_id": "C_w21",
+    "history_id": 16095,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   },
+   {
+    "wafer_id": "C_w22",
+    "history_id": 4039,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   },
+   {
+    "wafer_id": "C_w23",
+    "history_id": 13341,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   },
+   {
+    "wafer_id": "C_w24",
+    "history_id": 15240,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   },
+   {
+    "wafer_id": "C_w25",
+    "history_id": 22963,
+    "echipament": "CMP-02",
+    "clasa_reala": "Center"
+   }
+  ]
+ },
+ {
+  "lot": "D",
+  "wafere": [
+   {
+    "wafer_id": "D_w01",
+    "history_id": 30230,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w02",
+    "history_id": 26745,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w03",
+    "history_id": 28279,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w04",
+    "history_id": 28361,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w05",
+    "history_id": 30311,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w06",
+    "history_id": 30027,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w07",
+    "history_id": 25981,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w08",
+    "history_id": 29730,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w09",
+    "history_id": 26245,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w10",
+    "history_id": 29732,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w11",
+    "history_id": 17611,
+    "echipament": "LITHO-01",
+    "clasa_reala": "Scratch"
+   },
+   {
+    "wafer_id": "D_w12",
+    "history_id": 28816,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w13",
+    "history_id": 25764,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w14",
+    "history_id": 27925,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w15",
+    "history_id": 29870,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w16",
+    "history_id": 26421,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w17",
+    "history_id": 29266,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w18",
+    "history_id": 28174,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w19",
+    "history_id": 30154,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w20",
+    "history_id": 28329,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w21",
+    "history_id": 23234,
+    "echipament": "LITHO-01",
+    "clasa_reala": "Scratch"
+   },
+   {
+    "wafer_id": "D_w22",
+    "history_id": 26920,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w23",
+    "history_id": 26480,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w24",
+    "history_id": 28545,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   },
+   {
+    "wafer_id": "D_w25",
+    "history_id": 26174,
+    "echipament": "LITHO-01",
+    "clasa_reala": "none"
+   }
+  ]
+ }
+]
