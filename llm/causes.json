@@ -1,0 +1,68 @@
+{
+  "Center": {
+    "causes": [
+      "Depunere neuniformă de strat (CVD/PVD)",
+      "Presiune asimetrică la lustruirea mecano-chimică (CMP)",
+      "Variații termice pe centrul platanului de încălzire"
+    ],
+    "check": "Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP."
+  },
+  "Donut": {
+    "causes": [
+      "Profil termic inelar sau gradient radial excesiv pe platanul de încălzire",
+      "Flux turbulent de gaz la periferia zonei centrale în reactorul de depunere",
+      "Distribuție neuniformă a suspensiei abrazive (slurry) în procesul CMP"
+    ],
+    "check": "Inspectează zonele concentrice de încălzire ale susceptorului și sistemul de distribuție a slurry-ului CMP."
+  },
+  "Edge-Ring": {
+    "causes": [
+      "Eroziune a inelului de focalizare (focus ring) în gravarea cu plasmă",
+      "Răcire deficitară cu heliu pe marginea electrostatic chuck-ului (ESC)"
+    ],
+    "check": "Inspectează inelul de focalizare din camera de gravare și presiunea de heliu pe margine."
+  },
+  "Edge-Loc": {
+    "causes": [
+      "Contact mecanic agresiv pe marginea wafer-ului în timpul transferului",
+      "Stres termic localizat la clemele de susținere"
+    ],
+    "check": "Verifică pinii de aliniere (aligner pins) și forța brațului de prindere mecanică."
+  },
+  "Loc": {
+    "causes": [
+      "Defecte locale pe masca fotolitografică (reticle contamination)",
+      "Particulă aderentă în timpul expunerii UV sau depunere neomogenă punctuală",
+      "Blocaj localizat al duzelor de spălare post-gravare"
+    ],
+    "check": "Inspectează reticulul măștii fotolitografice și verifică integritatea duzelor de clătire din camera de proces."
+  },
+  "Near-full": {
+    "causes": [
+      "Defecțiune generalizată de proces (pierdere totală de vid sau variație critică de putere RF)",
+      "Contaminare masivă a liniei de alimentare cu reactanți chimici",
+      "Eroare severă de calibrare fotolitografică pe întreg wafer-ul"
+    ],
+    "check": "Oprește imediat echipamentul de procesare, verifică generatorul RF de plasmă și integritatea camerei de vid."
+  },
+  "Random": {
+    "causes": [
+      "Contaminare cu particule suspendate în camera curată (cleanroom)",
+      "Defectare filtru HEPA/ULPA deasupra stației de lucru"
+    ],
+    "check": "Măsoară concentrația de particule în incintă și verifică fluxul laminar de aer."
+  },
+  "Scratch": {
+    "causes": [
+      "Zgâriere provocată de brațul robotic de manipulare",
+      "Particule abrazive reziduale pe ventuzele de vid"
+    ],
+    "check": "Inspectează traseul brațului robotizat și curăță pernele de contact cu vid."
+  },
+  "none": {
+    "causes": [
+      "Parametri nominali de operare, fără abateri detectate"
+    ],
+    "check": "Autorizează transferul lotului către următoarea stație tehnologică."
+  }
+}

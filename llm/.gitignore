@@ -1,0 +1,30 @@
+# Environment variables & API keys (CRITICAL: Do not commit!)
+.env
+*.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Model Weights & Data
+*.pt
+*.pth
+*.bin
+*.onnx
+weights.pt
+embeddings.npy
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
