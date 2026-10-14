@@ -1,0 +1,9 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6
+numpy>=1.26
+pandas>=2.0
+matplotlib>=3.7
+torch>=2.0
+openai>=1.0.0
+python-dotenv>=1.0.0
