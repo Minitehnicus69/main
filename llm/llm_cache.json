@@ -1,0 +1,110 @@
+{
+ "62088f07069d78560f84b4ce1d5f31514e195207": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere maximă (0.999) și istoricul este perfect relevant (acord 1.0). Alarma de drift este activă: aceeași clasă a apărut pe 3 din ultimele 5 wafere, indicând o problemă sistemică, nu un defect izolat. Cauzele probabile sunt eroziunea inelului de focalizare (focus ring) în camera de gravare cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC).",
+  "actiune": "Verifică imediat integritatea inelului de focalizare din camera de gravare și presiunea de heliu pe marginea ESC. Deoarece alarma este activă, trebuie verificat tot lotul, nu doar wafer-ul curent."
+ },
+ "0828e8e8151b6069e6671b444b9e90226b72a8a0": {
+  "explicatie": "Clasa Center (încredere 0.99, acord istoric 1.0) indică probabil depunere neuniformă CVD/PVD, presiune asimetrică la CMP sau variații termice centrale. Alarma de drift este activă (3 din ultimele 5 wafere), deci tot lotul trebuie verificat, nu doar wafer-ul curent.",
+  "actiune": "Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP. Inspectează tot lotul C pentru aceeași abatere."
+ },
+ "a76c51a738e31f61de31787a7e747877862d995e": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere maximă (1.0) și acord perfect cu istoricul (1.0). Cauzele probabile sunt eroziunea inelului de focalizare (focus ring) în camera de gravare cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC). Manualul de troubleshooting confirmă aceste ipoteze.",
+  "actiune": "Inspectează inelul de focalizare din camera de gravare și verifică presiunea de heliu pe marginea ESC. Nu este necesară verificarea întregului lot, deoarece alarma de drift este inactivă."
+ },
+ "7ffd456287c6d69a56f1e9a51db8c4f73d773f0e": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere maximă (1.0) și acord perfect cu istoricul (1.0). Cauzele probabile sunt eroziunea inelului de focalizare în camera de gravare cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC). Manualul de troubleshooting (pag. 29) confirmă aceste ipoteze.",
+  "actiune": "Inspectează inelul de focalizare din camera de gravare și verifică presiunea de heliu pe marginea ESC. Nu este necesară verificarea întregului lot, deoarece alarma de drift este inactivă."
+ },
+ "bbbbb0ce40e60a667fbb2148aa535ca8afe655b8": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere mare (0.981) și istoricul o susține (acord 1.0). Cauzele probabile sunt eroziunea inelului de focalizare în camera de gravare cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC). Alarma de drift este activă: clasa Edge-Ring apare pe 4 din ultimele 5 wafere, deci tot lotul B trebuie verificat, nu doar wafer-ul curent.",
+  "actiune": "Inspectează inelul de focalizare din camera de gravare și verifică presiunea de heliu pe marginea ESC. Oprește procesarea lotului B pentru inspecție completă a echipamentului."
+ },
+ "77e565e1176aa957ec38b4403b8b25773dee10db": {
+  "explicatie": "Clasificarea curentă este Edge-Loc, dar istoricul nu confirmă această clasă (acord 0.0). Există o alarmă de drift: clasa Edge-Ring a apărut pe 4 din ultimele 5 wafere, iar cele mai similare cazuri din istoric sunt tot Edge-Ring. Manualul indică pentru Edge-Ring eroziunea inelului de focalizare sau presiune insuficientă de heliu pe marginea ESC.",
+  "actiune": "Verifică tot lotul, nu doar wafer-ul curent. Inspectează inelul de focalizare din camera de gravare și presiunea de heliu pe marginea ESC."
+ },
+ "aec8821b06f1c61aef4edff8b4161db8f9cecf73": {
+  "explicatie": "Clasificarea curentă este Edge-Loc (încredere 0.867), dar istoricul nu confirmă această clasă (acord vecini 0.2). Există o alarmă de drift: clasa Edge-Ring a apărut pe 3 din ultimele 5 wafere. Cele mai similare wafere din istoric sunt clasificate ca Edge-Ring, iar manualul indică eroziunea inelului de focalizare sau presiune insuficientă de heliu pe marginea ESC cauze pentru Edge-Ring.",
+  "actiune": "Verifică tot lotul, nu doar wafer-ul curent, din cauza alarmei de drift. Inspectează inelul de focalizare din camera de gravare și presiunea de heliu pe marginea electrostatic chuck-ului (ESC)."
+ },
+ "388426e5d555464f381c9d8032dd06ef0e32fc6a": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere maximă și istoric. Cauzele probabile sunt eroziunea inelului de focalizare (focus ring) în camera de gravare cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC). Alarma de drift este activă: clasa Edge-Ring a apărut pe 3 din ultimele 5 wafere, indicând o problemă sistemică.",
+  "actiune": "Verifică imediat integritatea inelului de focalizare și presiunea de heliu pe marginea ESC. Deoarece alarma este activă, trebuie verificat tot lotul, nu doar wafer-ul curent."
+ },
+ "4705b7b49a4cf1a28dd6ba879f118e86ff70df7b": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere ridicată (0.995) și acord perfect cu istoricul (1.0). Cauzele probabile sunt eroziunea inelului de focalizare (focus ring) în camera de gravare cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC). Alarma de drift este activă deoarece clasa Edge-Ring a apărut pe 3 din ultimele 5 wafere, indicând o problemă sistemică, nu izolată.",
+  "actiune": "Oprește procesul și verifică tot lotul, nu doar wafer-ul curent. Inspectează inelul de focalizare din camera de gravare și verifică presiunea de heliu pe marginea ESC."
+ },
+ "907d95f8f35765016f210bc0b746a693179fcdb1": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere maximă (0.999) și istoricul (acord 1.0) susține această clasificare. Cauzele probabile sunt eroziunea inelului de focalizare (focus ring) în camera de gravare cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC). Alarma de drift este activă deoarece clasa Edge-Ring a apărut pe 3 din ultimele 5 wafere.",
+  "actiune": "Verifică imediat integritatea inelului de focalizare din camera de gravare și presiunea de heliu pe marginea ESC. Deoarece alarma de drift este activă, trebuie verificat tot lotul, nu doar wafer-ul curent."
+ },
+ "0c1f6ba2bbcc997bc90975e808872c9a621d85d2": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere maximă (0.998) și acord perfect cu istoricul (1.0). Alarma de drift este activă: aceeași clasă a apărut pe 4 din ultimele 5 wafere, indicând o problemă sistemică, nu un defect izolat. Cauzele probabile sunt eroziunea inelului de focalizare (focus ring) în camera de gravare cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC).",
+  "actiune": "Verifică tot lotul, nu doar wafer-ul curent. Inspectează imediat inelul de focalizare din camera de gravare și verifică presiunea de heliu pe marginea ESC."
+ },
+ "635dc9671bc5aea4656135f8ebd54ef2b8f02521": {
+  "explicatie": "Clasificarea curentă este Edge-Loc (încredere 0.52), dar alarmă de drift indică repetarea clasei Edge-Ring pe 4 din ultimele 5 wafere. Istoricul confirmă parțial (acord 0.6), iar cele mai similare cazuri sunt majoritar Edge-Ring. Manualul asociază Edge-Ring cu eroziunea inelului de focalizare sau presiune insuficientă de heliu pe ESC. Edge-Loc poate fi cauzat de contact mecanic la transfer sau stres termic la cleme.",
+  "actiune": "Verifică tot lotul B, nu doar wafer-ul curent. Inspectează inelul de focalizare din camera de gravare și presiunea de heliu pe marginea ESC. Verifică și pinii de aliniere și forța brațului de prindere pentru a exclude cauzele Edge-Loc."
+ },
+ "7709b5d3a83c1247ee7d52a917087b38f0f0296c": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere maximă (0.999) și istoricul (acord 1.0). Alarma de drift este activă: aceeași clasă apare pe 4 din ultimele 5 wafere, deci tot lotul trebuie verificat. Cauzele probabile sunt eroziunea inelului de focalizare în camera de gravare cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC).",
+  "actiune": "Oprește procesul și inspectează inelul de focalizare din camera de gravare. Verifică presiunea de heliu pe marginea ESC. Verifică integritatea lotului B, nu doar wafer-ul curent."
+ },
+ "27b763b368e1e5a6085b79167f9baa1f77b11d11": {
+  "explicatie": "Clasa Edge-Ring este confirmată (acord 1.0). Cauze probabile: eroziune a inelului de focalizare în camera de gravare cu plasmă sau răcire deficitară cu heliu pe marginea electrostatic chuck-ului (ESC). Alarma de drift este activă (4 din ultimele 5 wafere), indicând o problemă sistemică, nu izolată.",
+  "actiune": "Verifică tot lotul, nu doar wafer-ul curent. Inspectează inelul de focalizare din camera de gravare și verifică presiunea de heliu pe marginea ESC."
+ },
+ "141441f16b2f4bcc880f82f62e905b9689db8e7e": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere maximă (0.998) și istoricul o susține perfect (acord 1.0). Cauzele probabile sunt eroziunea inelului de focalizare în camera de gravare cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC). Alarma de drift este activă: clasa Edge-Ring a apărut pe 4 din ultimele 5 wafere, indicând o problemă sistemică, nu un defect izolat.",
+  "actiune": "Verifică imediat starea inelului de focalizare din camera de gravare și presiunea de heliu pe marginea ESC. Deoarece alarma este activă, trebuie verificat tot lotul, nu doar wafer-ul curent."
+ },
+ "e07c65c1c1c24a07b7398df9382def67b71ceefa": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere maximă (0.999) și istoricul (acord 1.0) susține diagnosticul. Cauzele probabile sunt eroziunea inelului de focalizare (focus ring) în camera de gravare cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC). Alarma de drift este activă deoarece aceeași clasă a apărut pe 5 din ultimele 5 wafere, indicând o problemă sistemică, nu un defect izolat.",
+  "actiune": "Oprește procesarea și verifică tot lotul, nu doar wafer-ul curent. Inspectează imediat inelul de focalizare din camera de gravare și presiunea de heliu pe marginea ESC."
+ },
+ "3275950aee9f44264861c2066dafae3a98537bdf": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere maximă (0.999) și istoricul este perfect aliniat (acord 1.0). Cauzele probabile sunt eroziunea inelului de focalizare în camera de gravare cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC). Alarma de drift este activă deoarece aceeași clasă a apărut pe 5 din ultimele 5 wafere, indicând o problemă sistemică, nu un defect izolat.",
+  "actiune": "Verifică imediat integritatea inelului de focalizare și presiunea de heliu pe marginea ESC. Deoarece alarma este activă, trebuie verificat tot lotul, nu doar wafer-ul curent."
+ },
+ "5e336f235e58dcf05b18d58bcba564ea7dbb1ede": {
+  "explicatie": "Clasificarea 'Loc' are o încredere scăzută (0.393), dar istoricul confirmă clasa (acord 0.6). Cauzele probabile sunt contaminarea reticulului fotolitografic, particule în timpul expunerii UV sau duze de spălare blocate. Manualul indică inspectarea reticulului.",
+  "actiune": "Inspectează reticulul măștii fotolitografice și verifică integritatea duzelor de clătire din camera de proces."
+ },
+ "98dfd78feb60fe6d20f710ffff6f49a8d3248144": {
+  "explicatie": "Clasa Center (încredere 99.6%) indică probabil depunere neuniformă (CVD/PVD), presiune asimetrică la CMP sau variații termice pe centrul platanului. Istoricul confirmă clasa (acord 1.0). Nu este alarmă de drift.",
+  "actiune": "Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP, conform manualului CVD."
+ },
+ "754606b2660fd99c2f0306e0b6ce0b8a2a38f8b7": {
+  "explicatie": "Clasa Center (încredere 94%) este confirmată de istoric (acord 1.0). Cauze probabile: depunere neuniformă CVD/PVD, presiune asimetrică CMP sau variații termice centrale. Alarma de drift este activă (4 din ultimele 5 wafere), indicând o problemă sistemică, nu izolată.",
+  "actiune": "Verifică duzele centrale de gaz și planeitatea capului CMP. Deoarece alarma de drift este activă, trebuie verificat tot lotul, nu doar wafer-ul curent."
+ },
+ "e52cd69e9a3932f8898d376b6b4aeae7512937ad": {
+  "explicatie": "Clasa Center (încredere 100%, acord istoric 100%) indică probabil depunere neuniformă CVD/PVD, presiune asimetrică CMP sau variații termice centrale. Alarma de drift este activă (5 din ultimele 5 wafere), deci tot lotul trebuie verificat, nu doar wafer-ul curent.",
+  "actiune": "Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP. Oprește linia pentru a inspecta tot lotul C."
+ },
+ "95562f55758ec8fa8e0ca408d9bd153da4675b0e": {
+  "explicatie": "Clasa Center (încredere 99.8%) indică probabil depunere neuniformă CVD/PVD, presiune asimetrică la CMP sau variații termice pe platan. Alarma de drift este activă: aceeași clasă apare pe 5 din ultimele 5 wafere, deci tot lotul C trebuie verificat, nu doar wafer-ul curent. Istoricul confirmă clasa (acord 1.0).",
+  "actiune": "Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP, conform manualului CVD (pag. 14)."
+ },
+ "b25b081e177fc02c8953bbb7baf6dc222fa2538b": {
+  "explicatie": "Clasa Center (încredere 99.8%) este confirmată de istoric (acord 1.0). Cauze probabile: depunere neuniformă (CVD/PVD), presiune asimetrică la CMP sau variații termice pe centrul platanului. Manualul indică neuniformități de debit gaz sau temperatură asimetrică.",
+  "actiune": "ALARMĂ DRIFT: Clasa Center apare pe 5 din ultimele 5 wafere; verifică tot lotul, nu doar wafer-ul curent. Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP."
+ },
+ "af57ed13d91136d3b7b0d03856872a5ae0146294": {
+  "explicatie": "Clasa Center (încredere 98.9%) este confirmată de istoric (acord 1.0). Alarma de drift este activă: aceeași clasă apare pe 5 din ultimele 5 wafere, deci tot lotul C trebuie verificat. Cauze probabile: depunere neuniformă CVD/PVD, presiune asimetrică CMP sau variații termice pe centrul platanului.",
+  "actiune": "Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP. Opriți procesarea lotului C pentru inspecție completă."
+ },
+ "852a7bad2b7b24a89cd82333ffcdafad5fad7d1f": {
+  "explicatie": "Clasa 'Center' este confirmată cu încredere mare (0.938) și istoricul este perfect relevant (acord 1.0). Cauzele probabile sunt depunerea neuniformă de strat (CVD/PVD), presiunea asimetrică la CMP sau variații termice pe centrul platanului. Alarma de drift este activă: aceeași clasă apare pe 5 din ultimele 5 wafere, indicând o problemă sistemică, nu un defect izolat.",
+  "actiune": "Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP. Deoarece alarma de drift este activă, trebuie verificat tot lotul, nu doar wafer-ul curent."
+ },
+ "b9105754b50c4717dd9d5dd64a5015390422fdf9": {
+  "explicatie": "Clasa Center (încredere 99.9%) indică probabil depunere neuniformă CVD/PVD, presiune asimetrică la CMP sau variații termice pe platan. Alarma de drift este activă: clasa apare pe 5 din ultimele 5 wafere, deci tot lotul trebuie verificat, nu doar wafer-ul curent. Istoricul confirmă clasa (acord 1.0).",
+  "actiune": "Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP. Oprește procesul pentru a inspecta tot lotul C, având în vedere repetabilitatea defectului."
+ },
+ "4a1aef67ad5502be18fadc380866e165b3d24fd6": {
+  "explicatie": "Clasa Center (încredere 84.5%) este confirmată de istoric (acord 1.0). Alarma de drift este activă: aceeași clasă apare pe 5 din ultimele 5 wafere din fereastră, deci tot lotul trebuie verificat, nu doar wafer-ul curent. Cauze probabile: depunere neuniformă (CVD/PVD), presiune asimetrică la CMP sau variații termice pe centrul platanului.",
+  "actiune": "Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP. Inspectează lotul complet pentru abateri similare."
+ }
+}

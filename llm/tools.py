@@ -1,186 +1,163 @@
-# llm/tools.py
+import json
+import logging
+import re
 import sys
+from collections import Counter
 from pathlib import Path
 
-# Asigură rezolvarea modulelor locale indiferent de directorul curent de lucru
-current_dir = str(Path(__file__).resolve().parent)
-if current_dir not in sys.path:
-    sys.path.insert(0, current_dir)
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
+import model.predict as _P
+import model.similar as _S
+import model.unknown as _U
 
-from classifier import predict_wafer
-from rag import cauta_manual
+log = logging.getLogger("tools")
 
-# Baza de date pentru testare și integrare
-MOCK_CLASSIFICATION_DB = {
-    "W-101": {"class": "Edge-Ring", "confidence": 0.91},
-    "W-102": {"class": "Center", "confidence": 0.96},
-    "W-103": {"class": "necunoscut", "confidence": 0.32},
-    "W-104": {"class": "Scratch", "confidence": 0.88},
-    "W-105": {"class": "none", "confidence": 0.99},
-    "W-106": {"class": "Center", "confidence": 0.65}
-}
+try:
+    CAUSES = json.loads((HERE / "causes.json").read_text(encoding="utf-8"))
+except Exception:
+    CAUSES = {}
 
-# 1. Implementările funcțiilor (Unelte)
-def tool_clasifica(wafer_id: str, wafer_matrix: list | None = None) -> dict:
-    """
-    Obține clasa defectului și scorul de încredere pentru wafer din modelul CNN
-    (folosind weights.pt dacă se furnizează o matrice a wafer-ului, altfel din registrul lotului).
-    """
-    if wafer_matrix is not None:
-        try:
-            return predict_wafer(wafer_matrix)
-        except Exception as e:
-            print(f"[tool_clasifica] Eroare la inferenta CNN: {e}")
+_ready = False
+_MAPS = None
+_LOTS = {}
+_WAFERS = {}
+_cache = {}
+_rag_warned = False
 
-    return MOCK_CLASSIFICATION_DB.get(wafer_id, {"class": "Center", "confidence": 0.85})
 
-def tool_verifica_drift(lot_id: str) -> dict:
-    """
-    Verifică dacă s-a declanșat o alarmă de drift (același defect repetat în lotul curent:
-    minim 3 din ultimele 5 wafere cu aceeași clasă defectă).
-    """
-    if lot_id in ("LOT-CRITIC", "L-02"):
-        return {"lot_id": lot_id, "alarm": True, "repeated_class": "Center", "count": 3}
-    return {"lot_id": lot_id, "alarm": False, "repeated_class": "none", "count": 0}
+def _init():
+    """Încarcă modelul, istoricul și loturile o singură dată (primul apel e lent)."""
+    global _ready, _MAPS, _LOTS, _WAFERS
+    if _ready:
+        return
+    _P._load(str(ROOT / "weights.pt"))
+    _S._load(str(ROOT / "history.npz"))
+    _U._load(str(ROOT / "history.npz"))
+    _MAPS = _S._H["maps"]
+    lots = json.loads((ROOT / "data" / "lots.json").read_text(encoding="utf-8"))
+    _LOTS = {l["lot"]: l["wafere"] for l in lots}
+    _WAFERS = {w["wafer_id"]: {**w, "lot": l["lot"]} for l in lots for w in l["wafere"]}
+    _ready = True
 
-def tool_gaseste_similare(wafer_id: str) -> list[dict]:
-    """
-    Găsește wafere similare din baza istorică de fabricație pe baza spațiului de embedding.
-    """
-    return [
-        {"wafer_id": "W-HIST-441", "class": "Center", "similarity": 0.93},
-        {"wafer_id": "W-HIST-812", "class": "Center", "similarity": 0.89}
-    ]
 
-def tool_cauta_manual(query: str) -> list[dict]:
-    """
-    Caută proceduri de intervenție și cauze fizice în manualele tehnice de proces prin motorul RAG.
-    """
-    return cauta_manual(query, top_k=1)
+def _resolve(wafer_id):
+    """'B_w10' (din lots.json) sau un număr (history_id) -> history_id."""
+    _init()
+    if wafer_id in _WAFERS:
+        return _WAFERS[wafer_id]["history_id"]
+    if re.fullmatch(r"\d+", str(wafer_id)):
+        return int(wafer_id)
+    raise ValueError(f"wafer necunoscut: {wafer_id}")
 
-# Mapare nume -> funcție executabilă
-TOOL_ROUTER = {
-    "clasifica": tool_clasifica,
-    "verifica_drift": tool_verifica_drift,
-    "gaseste_similare": tool_gaseste_similare,
-    "cauta_manual": tool_cauta_manual
-}
 
-# Scheme Anthropic (compatibile cu ghidul original)
-TOOLS_DEFINITIONS = [
-    {
-        "name": "clasifica",
-        "description": "Obține clasa defectului și scorul de încredere pentru wafer din modelul CNN.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "wafer_id": {"type": "string", "description": "ID-ul unic al wafer-ului"}
-            },
-            "required": ["wafer_id"]
-        }
-    },
-    {
-        "name": "verifica_drift",
-        "description": "Verifică dacă s-a declanșat o alarmă de drift (același defect repetat în lotul curent).",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "lot_id": {"type": "string", "description": "ID-ul lotului de producție"}
-            },
-            "required": ["lot_id"]
-        }
-    },
-    {
-        "name": "gaseste_similare",
-        "description": "Găsește wafere similare din baza istorică de fabricație pe baza spațiului de embedding.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "wafer_id": {"type": "string", "description": "ID-ul wafer-ului curent"}
-            },
-            "required": ["wafer_id"]
-        }
-    },
-    {
-        "name": "cauta_manual",
-        "description": "Caută proceduri de intervenție și cauze fizice în manualele tehnice de proces.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "query": {"type": "string", "description": "Cuvinte cheie sau descrierea defectului"}
-            },
-            "required": ["query"]
-        }
-    }
-]
+def lot_of(wafer_id):
+    _init()
+    return _WAFERS.get(wafer_id, {}).get("lot")
 
-# Scheme OpenAI / Qwen3.8-27B Function Calling (type: 'function')
+
+def tool_clasifica(wafer_id):
+    _init()
+    if wafer_id in _cache:
+        return _cache[wafer_id]
+    hid = _resolve(wafer_id)
+    w = _MAPS[hid]
+    p, u = _P.predict(w), _U.is_unknown(w)
+    out = {"class": p["clasa"], "confidence": p["incredere"], "unknown": u["necunoscut"],
+           "nearest_class": u["cel_mai_apropiat"], "history_id": hid}
+    _cache[wafer_id] = out
+    return out
+
+
+def tool_verifica_drift(lot_id, wafer_id=None):
+    """Regulă: în ultimele 5 wafere (până la wafer_id), fără 'none', aceeași clasă de >= 3 ori."""
+    _init()
+    wafere = _LOTS.get(lot_id)
+    if not wafere:
+        return {"alarm": False, "repeated_class": None, "affected": 0, "window": [], "error": f"lot necunoscut: {lot_id}"}
+    ids = [w["wafer_id"] for w in wafere]
+    end = ids.index(wafer_id) + 1 if wafer_id in ids else len(ids)
+    window = [tool_clasifica(i)["class"] for i in ids[max(0, end - 5):end]]
+    fer = [c for c in window if c != "none"]
+    if fer:
+        c, n = Counter(fer).most_common(1)[0]
+        if n >= 3:
+            return {"alarm": True, "repeated_class": c, "affected": n, "window": window}
+    return {"alarm": False, "repeated_class": None, "affected": 0, "window": window}
+
+
+def tool_gaseste_similare(wafer_id, k=5):
+    _init()
+    hid = _resolve(wafer_id)
+    res = [r for r in _S.similar(_MAPS[hid], k + 1) if r["id"] != hid][:k]
+    return [{"wafer_id": f"history_{r['id']}", "history_id": r["id"], "clasa": r["clasa"], "scor": r["scor"]} for r in res]
+
+
+def _first(d, keys, default=None):
+    for k in keys:
+        if d.get(k) not in (None, ""):
+            return d[k]
+    return default
+
+
+def _normalize(item):
+    """Acceptă dict-uri cu chei diferite, șiruri sau tuple, și le aduce la {doc, page, text}."""
+    if isinstance(item, str):
+        return {"doc": "rag", "page": None, "text": item}
+    if isinstance(item, (tuple, list)) and item:
+        return {"doc": "rag", "page": None, "text": str(item[0])}
+    if isinstance(item, dict):
+        return {"doc": _first(item, ("doc", "sursa", "source", "file", "filename", "document"), "rag"),
+                "page": _first(item, ("page", "pagina", "page_number", "p")),
+                "text": str(_first(item, ("text", "content", "chunk", "snippet"), ""))}
+    return {"doc": "rag", "page": None, "text": str(item)}
+
+
+def _rag_search(query, k):
+    from llm import rag
+    for name in ("cauta_manual", "search", "query", "retrieve", "search_manual", "cauta"):
+        fn = getattr(rag, name, None)
+        if callable(fn):
+            try:
+                return fn(query, k)
+            except TypeError:
+                return fn(query)
+    raise AttributeError("rag.py nu are nicio funcție de căutare cunoscută; funcții găsite: "
+                         + ", ".join(n for n in dir(rag) if not n.startswith("_")))
+
+
+def tool_cauta_manual(query, k=3):
+    """Folosește rag.py dacă merge; altfel cade pe causes.json (și scrie motivul în log, o singură dată)."""
+    global _rag_warned
+    try:
+        out = [_normalize(r) for r in _rag_search(query, k)]
+        if out:
+            return out
+    except Exception as e:
+        if not _rag_warned:
+            log.warning("rag.py nu răspunde, folosesc causes.json: %r", e)
+            _rag_warned = True
+    info = CAUSES.get(query)
+    return [{"doc": "causes.json", "page": None, "text": json.dumps(info, ensure_ascii=False)}] if info else []
+
+
+def _fn(name, desc, props, req):
+    return {"type": "function", "function": {"name": name, "description": desc,
+            "parameters": {"type": "object", "properties": props, "required": req}}}
+
+
 OPENAI_TOOLS_DEFINITIONS = [
-    {
-        "type": "function",
-        "function": {
-            "name": "clasifica",
-            "description": "Obține clasa defectului și scorul de încredere pentru wafer din modelul CNN.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "wafer_id": {"type": "string", "description": "ID-ul unic al wafer-ului"}
-                },
-                "required": ["wafer_id"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "verifica_drift",
-            "description": "Verifică dacă s-a declanșat o alarmă de drift (același defect repetat în lotul curent).",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "lot_id": {"type": "string", "description": "ID-ul lotului de producție"}
-                },
-                "required": ["lot_id"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "gaseste_similare",
-            "description": "Găsește wafere similare din baza istorică de fabricație pe baza spațiului de embedding.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "wafer_id": {"type": "string", "description": "ID-ul wafer-ului curent"}
-                },
-                "required": ["wafer_id"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "cauta_manual",
-            "description": "Caută proceduri de intervenție și cauze fizice în manualele tehnice de proces.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "Cuvinte cheie sau descrierea defectului"}
-                },
-                "required": ["query"]
-            }
-        }
-    }
+    _fn("clasifica", "Clasifică un wafer map (clasă, încredere, dacă e pattern necunoscut).",
+        {"wafer_id": {"type": "string"}}, ["wafer_id"]),
+    _fn("verifica_drift", "Verifică dacă lotul are alarmă de drift până la un wafer.",
+        {"lot_id": {"type": "string"}, "wafer_id": {"type": "string"}}, ["lot_id"]),
+    _fn("gaseste_similare", "Găsește cele mai asemănătoare wafere din istoric.",
+        {"wafer_id": {"type": "string"}}, ["wafer_id"]),
+    _fn("cauta_manual", "Caută în manuale cauze și proceduri pentru un tip de defect.",
+        {"query": {"type": "string"}}, ["query"]),
 ]
-
-if __name__ == "__main__":
-    print("Testare unelte...")
-    print("1. clasifica(W-101):", tool_clasifica("W-101"))
-    print("2. verifica_drift(LOT-CRITIC):", tool_verifica_drift("LOT-CRITIC"))
-    print("3. gaseste_similare(W-106):", tool_gaseste_similare("W-106"))
-    print("4. cauta_manual(Center):", tool_cauta_manual("Center"))
-    print("Toate cele 4 unelte sunt functionale!")
+TOOL_ROUTER = {"clasifica": tool_clasifica, "verifica_drift": tool_verifica_drift,
+               "gaseste_similare": tool_gaseste_similare, "cauta_manual": tool_cauta_manual}
