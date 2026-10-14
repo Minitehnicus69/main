@@ -1,0 +1,22 @@
+{
+  "wafer_id": "B_w10",
+  "lot_id": "B",
+  "class_name": "Edge-Ring",
+  "is_defect": true,
+  "confidence": 0.97,
+  "is_unknown": false,
+  "uncertain": false,
+  "explanation": "[MOCK] Alarmă de drift în lotul B: 'Edge-Ring' apare pe cel puțin 3 din ultimele 5 wafere. Indică o problemă de proces, nu un wafer izolat.",
+  "action": "[MOCK] Oprește lotul și verifică echipamentul de gravare la marginea wafer-ului.",
+  "sources": ["causes.json"],
+  "similar_images": [
+    {"wafer_id": "history_0", "class_name": "Edge-Ring", "probability": 96.4,
+     "wafer": [[0,2,2,2,0],[2,1,1,1,2],[2,1,1,1,2],[2,1,1,1,2],[0,2,2,2,0]]},
+    {"wafer_id": "history_1", "class_name": "Edge-Ring", "probability": 94.1,
+     "wafer": [[0,2,2,1,0],[2,1,1,1,2],[2,1,1,1,2],[1,1,1,1,2],[0,2,2,2,0]]}
+  ],
+  "drift": {"alarm": true, "repeated_class": "Edge-Ring", "affected": 3, "window": ["none", "none", "Edge-Ring", "Edge-Ring", "Edge-Ring"]},
+  "cost": {"cost_rebut": 13500.0, "cost_oprire": 10000.0, "p_defect": 0.6, "wafere_ramase": 15, "recomandare": "opreste"},
+  "wafer": [[0,2,2,2,0],[2,1,1,1,2],[2,1,1,1,2],[2,1,1,1,2],[0,2,2,2,0]],
+  "gradcam_png": null
+}
