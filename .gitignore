@@ -5,3 +5,6 @@ __pycache__/
 *.pt
 *.npy
 *.npz
+# fișierele de care are nevoie API-ul la deploy (Railway construiește din git)
+!/weights.pt
+!/history.npz
