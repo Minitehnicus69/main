@@ -1,56 +1,56 @@
 [
   {
     "id": 1,
-    "title": "Defect izolat Edge-Ring",
+    "title": "Isolated Edge-Ring Defect",
     "input": {
       "wafer_id": "W-101",
       "lot_id": "L-01"
     },
-    "expected_type": "Edge-Ring izolat, verificare focus ring la final de tură"
+    "expected_type": "Isolated Edge-Ring, verify focus ring at end of shift"
   },
   {
     "id": 2,
-    "title": "Alarmă critică de drift (Center repetat)",
+    "title": "Critical Drift Alarm (Repeated Center)",
     "input": {
       "wafer_id": "W-102",
       "lot_id": "LOT-CRITIC"
     },
-    "expected_type": "Alarmă drift activă; oprire imediată a camerei CVD"
+    "expected_type": "Active drift alarm; immediate shutdown of CVD chamber"
   },
   {
     "id": 3,
-    "title": "Pattern necunoscut (Out-of-Distribution)",
+    "title": "Unknown Pattern (Out-of-Distribution)",
     "input": {
       "wafer_id": "W-103",
       "lot_id": "L-03"
     },
-    "expected_type": "Defect necunoscut; marcare pentru etichetare de către inginer"
+    "expected_type": "Unknown defect; flag for labeling by process engineer"
   },
   {
     "id": 4,
-    "title": "Zgârietură mecanică (Scratch)",
+    "title": "Mechanical Scratch",
     "input": {
       "wafer_id": "W-104",
       "lot_id": "L-04"
     },
-    "expected_type": "Defect Scratch; inspectare braț robotizat și traseu de transfer"
+    "expected_type": "Scratch defect; inspect robotic arm and transfer path"
   },
   {
     "id": 5,
-    "title": "Wafer nominal curat (None)",
+    "title": "Nominal Clean Wafer (None)",
     "input": {
       "wafer_id": "W-105",
       "lot_id": "L-05"
     },
-    "expected_type": "Fără defect; autorizare trecere la următorul pas"
+    "expected_type": "No defect; authorize transfer to next step"
   },
   {
     "id": 6,
-    "title": "Încredere scăzută cu validare prin similaritate",
+    "title": "Low Confidence with Similarity Validation",
     "input": {
       "wafer_id": "W-106",
       "lot_id": "L-06"
     },
-    "expected_type": "Apelare gaseste_similare pentru confirmarea clasei ambigue"
+    "expected_type": "Call find_similar to confirm ambiguous class"
   }
 ]

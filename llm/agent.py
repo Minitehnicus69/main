@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 
-# Asigură rezolvarea modulelor locale indiferent de directorul curent de lucru
+# Ensure local module resolution regardless of current working directory
 current_dir = str(Path(__file__).resolve().parent)
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-# Încărcare variabile de mediu din .env (localizat în directorul llm)
+# Load environment variables from .env (located in llm directory)
 env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
@@ -21,17 +21,21 @@ from tools import (
     OPENAI_TOOLS_DEFINITIONS,
     TOOL_ROUTER,
     tool_cauta_manual,
+    tool_check_drift,
     tool_clasifica,
+    tool_classify,
+    tool_find_similar,
     tool_gaseste_similare,
+    tool_search_manual,
     tool_verifica_drift,
 )
 
-# Configurare API externă conform cerințelor utilizatorului
+# External API configuration as per user specifications
 API_KEY = os.environ.get("LLM_API_KEY", "rc-096ecf812a39bafd5551d273d4f7cedeb4c90eeea326187e")
 MODEL_NAME = os.environ.get("LLM_MODEL", "Qwen3.8-27B")
 BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1")
 
-# Încărcare cauze fizice din causes.json (antrenare/grounding de cunoștințe)
+# Load physical causes from causes.json (knowledge grounding)
 causes_file = Path(__file__).resolve().parent / "causes.json"
 KNOWN_CAUSES = {}
 if causes_file.exists():
@@ -39,117 +43,128 @@ if causes_file.exists():
         with open(causes_file, "r", encoding="utf-8") as f:
             KNOWN_CAUSES = json.load(f)
     except Exception as e:
-        print(f"[agent] Avertisment la citirea causes.json: {e}")
+        print(f"[agent] Warning reading causes.json: {e}")
 
-SYSTEM_PROMPT = """Ești un agent expert în diagnosticarea procesului de fabricație a wafer-elor de siliciu (baza de date WM-811K).
-Modele cunoscute de defecte (9 clase învățate din modelul CNN weights.pt):
-- Center: defecte centrale cauzate de depunere CVD/PVD neuniformă sau presiune asimetrică CMP.
-- Donut: profil termic inelar sau flux turbulent de gaz în camera CVD.
-- Edge-Ring: eroziune a inelului de focalizare (focus ring) în gravarea cu plasmă sau heliu pe marginea ESC.
-- Edge-Loc: contact mecanic agresiv pe marginea wafer-ului în timpul transferului robotic.
-- Loc: contaminare locală pe masca fotolitografică (reticle contamination) sau expunere UV.
-- Near-full: pierdere totală de vid, variație critică de putere RF sau contaminare masivă.
-- Random: particule suspendate în camera curată (cleanroom), defecțiune filtru HEPA/ULPA.
-- Scratch: zgâriere provocată de brațul robotic de manipulare sau particule abrazive pe ventuze.
-- none: wafer nominal conform, fără defecte structurale.
+SYSTEM_PROMPT = """You are an expert agent in silicon wafer manufacturing process diagnostics (WM-811K dataset).
+Known defect patterns (9 classes learned from the CNN model weights.pt):
+- Center: central defects caused by non-uniform CVD/PVD deposition or CMP asymmetric pressure.
+- Donut: ring thermal profile or turbulent gas flow in the CVD chamber.
+- Edge-Ring: focus ring erosion in plasma etching or helium cooling issues at the ESC edge.
+- Edge-Loc: aggressive mechanical contact on the wafer edge during robotic transfer.
+- Loc: local contamination on the photolithographic mask (reticle contamination) or UV exposure.
+- Near-full: total vacuum loss, critical RF power drift, or massive chemical contamination.
+- Random: suspended particles in the cleanroom, HEPA/ULPA filter failure.
+- Scratch: scratches caused by the robotic handling arm or abrasive particles on suction cups.
+- none: nominal conforming wafer, no structural defects.
 
-Instrucțiuni de operare:
-1. Analizează starea wafer-ului și a lotului apelând uneltele necesare ('clasifica', 'verifica_drift').
-2. Dacă nivelul de încredere este scăzut (< 0.70) sau defectul este 'necunoscut', apelează 'gaseste_similare'.
-3. Dacă apare un defect identificat, apelează 'cauta_manual' pentru a găsi instrucțiunile specifice de intervenție.
-4. Răspunsul FINAL trebuie să fie STRICT un obiect JSON valid, fără text sau markdown suplimentar:
+Operating instructions:
+1. Analyze the wafer and lot status by calling the necessary tools ('classify', 'check_drift').
+2. If confidence is low (< 0.70) or the defect is 'unknown', call 'find_similar'.
+3. If an identified defect appears, call 'search_manual' to find specific intervention instructions.
+4. The FINAL response must STRICTLY be a valid JSON object, without extra text or markdown:
 {
-  "explicatie": "Descrierea defectului, nivelul de încredere și starea de drift din lot.",
-  "actiune": "Măsura tehnică recomandată pentru operator/inginer.",
-  "surse": ["nume_document.pdf (p. X)", "causes.json"]
+  "explanation": "Defect description, confidence level, and lot drift status.",
+  "action": "Recommended technical measure for the operator/engineer.",
+  "sources": ["document_name.pdf (p. X)", "causes.json"]
 }"""
+
+def _build_response_dict(explanation: str, action: str, sources: list[str]) -> dict:
+    return {
+        "explanation": explanation,
+        "action": action,
+        "sources": sources,
+        # Romanian aliases for backwards compatibility
+        "explicatie": explanation,
+        "actiune": action,
+        "surse": sources
+    }
 
 def _execute_local_reasoning(wafer_id: str, lot_id: str) -> dict:
     """
-    Motor determinist de raționament ReAct bazat pe cunoștințele din weights.pt și causes.json.
-    Garantează răspuns conform schemei în caz de indisponibilitate a rețelei/endpoint-ului extern.
+    Deterministic ReAct reasoning engine based on knowledge from weights.pt and causes.json.
+    Guarantees schema-compliant responses during network/endpoint unavailability.
     """
-    # Pas 1: clasificare
-    clf = tool_clasifica(wafer_id)
+    # Step 1: classify
+    clf = tool_classify(wafer_id)
     c_class = clf.get("class", "Center")
     conf = clf.get("confidence", 0.85)
 
-    # Pas 2: verificare drift
-    drift = tool_verifica_drift(lot_id)
+    # Step 2: check drift
+    drift = tool_check_drift(lot_id)
     has_alarm = drift.get("alarm", False)
 
-    surse = ["causes.json"]
+    sources = ["causes.json"]
 
-    # Scenariul 5: Nominal curat
+    # Scenario 5: Nominal clean
     if c_class == "none":
-        doc_rag = tool_cauta_manual("none")
+        doc_rag = tool_search_manual("none")
         if doc_rag:
-            surse.insert(0, f"{doc_rag[0]['doc']} (p. {doc_rag[0]['page']})")
-        return {
-            "explicatie": f"Wafer-ul {wafer_id} din lotul {lot_id} este nominal curat (clasa 'none') cu încredere {conf*100:.1f}%. Nu s-au detectat anomalii sau alarme de drift.",
-            "actiune": "Autorizează transferul lotului către următoarea stație tehnologică.",
-            "surse": surse
-        }
+            sources.insert(0, f"{doc_rag[0]['doc']} (p. {doc_rag[0]['page']})")
+        return _build_response_dict(
+            explanation=f"Wafer {wafer_id} from lot {lot_id} is nominally clean (class 'none') with {conf*100:.1f}% confidence. No anomalies or drift alarms detected.",
+            action="Authorize lot transfer to the next technological process station.",
+            sources=sources
+        )
 
-    # Scenariul 3: Out-of-Distribution / Necunoscut
-    if c_class == "necunoscut" or conf < 0.40:
-        tool_gaseste_similare(wafer_id)
-        return {
-            "explicatie": f"Wafer-ul {wafer_id} prezintă un tipar structural necunoscut (încredere redusă {conf*100:.1f}%). S-au căutat referințe istorice similare.",
-            "actiune": "Marcare wafer pentru analiză OOD și etichetare manuală de către inginerul de proces.",
-            "surse": surse
-        }
+    # Scenario 3: Out-of-Distribution / Unknown
+    if c_class in ("unknown", "necunoscut") or conf < 0.40:
+        tool_find_similar(wafer_id)
+        return _build_response_dict(
+            explanation=f"Wafer {wafer_id} exhibits an unknown structural pattern (low confidence {conf*100:.1f}%). Queried historical reference similarities.",
+            action="Flag wafer for OOD analysis and manual labeling by the process engineer.",
+            sources=sources
+        )
 
-    # Scenariul 2: Alarmă critică de drift
+    # Scenario 2: Critical drift alarm
     if has_alarm:
-        doc_rag = tool_cauta_manual(c_class)
+        doc_rag = tool_search_manual(c_class)
         if doc_rag:
-            surse.insert(0, f"{doc_rag[0]['doc']} (p. {doc_rag[0]['page']})")
+            sources.insert(0, f"{doc_rag[0]['doc']} (p. {doc_rag[0]['page']})")
         rep_class = drift.get("repeated_class", c_class)
         info = KNOWN_CAUSES.get(rep_class, {})
-        check_action = info.get("check", "Oprire imediată a camerei de proces și verificare parametri.")
-        return {
-            "explicatie": f"Alarmă critică de drift activă în lotul {lot_id}: defectul repetat '{rep_class}' a fost detectat pe minim 3 din ultimele 5 wafere. Wafer curent: {wafer_id} ({conf*100:.1f}%).",
-            "actiune": f"Oprire imediată a camerei tehnologice asociate defectului {rep_class}. {check_action}",
-            "surse": surse
-        }
+        check_action = info.get("check", "Immediate shutdown of process chamber and parameter verification.")
+        return _build_response_dict(
+            explanation=f"Critical drift alarm active in lot {lot_id}: repeated defect '{rep_class}' detected on at least 3 of the last 5 wafers. Current wafer: {wafer_id} ({conf*100:.1f}%).",
+            action=f"Immediate shutdown of the process chamber associated with defect {rep_class}. {check_action}",
+            sources=sources
+        )
 
-    # Scenariul 6: Încredere scăzută cu validare prin similaritate
+    # Scenario 6: Low confidence with similarity validation
     if conf < 0.70:
-        sim_wafers = tool_gaseste_similare(wafer_id)
-        doc_rag = tool_cauta_manual(c_class)
+        sim_wafers = tool_find_similar(wafer_id)
+        doc_rag = tool_search_manual(c_class)
         if doc_rag:
-            surse.insert(0, f"{doc_rag[0]['doc']} (p. {doc_rag[0]['page']})")
+            sources.insert(0, f"{doc_rag[0]['doc']} (p. {doc_rag[0]['page']})")
         info = KNOWN_CAUSES.get(c_class, {})
-        check_action = info.get("check", "Inspecție detaliată.")
-        return {
-            "explicatie": f"Wafer-ul {wafer_id} a fost clasificat ca '{c_class}' cu încredere intermediară de {conf*100:.1f}%. Similaritatea istorică confirmă clasa prin potrivirile cu {sim_wafers[0]['wafer_id']}.",
-            "actiune": f"Se recomandă inspectarea parametrilor specifici clasei {c_class}. {check_action}",
-            "surse": surse
-        }
+        check_action = info.get("check", "Detailed inspection.")
+        return _build_response_dict(
+            explanation=f"Wafer {wafer_id} was classified as '{c_class}' with intermediate confidence of {conf*100:.1f}%. Historical similarity confirms class via matches with {sim_wafers[0]['wafer_id']}.",
+            action=f"Inspection of specific parameters for class {c_class} is recommended. {check_action}",
+            sources=sources
+        )
 
-    # Scenariile 1 și 4: Defect izolat identificat (Edge-Ring, Scratch, etc.)
-    doc_rag = tool_cauta_manual(c_class)
+    # Scenarios 1 and 4: Identified isolated defect (Edge-Ring, Scratch, etc.)
+    doc_rag = tool_search_manual(c_class)
     if doc_rag:
-        surse.insert(0, f"{doc_rag[0]['doc']} (p. {doc_rag[0]['page']})")
+        sources.insert(0, f"{doc_rag[0]['doc']} (p. {doc_rag[0]['page']})")
     info = KNOWN_CAUSES.get(c_class, {})
-    check_action = info.get("check", "Inspectează echipamentul de proces conform procedurii standard.")
+    check_action = info.get("check", "Inspect processing equipment according to standard procedure.")
 
-    return {
-        "explicatie": f"Wafer-ul {wafer_id} din lotul {lot_id} prezintă defect izolat de tip '{c_class}' (încredere {conf*100:.1f}%). Fără alarmă de drift pe lot.",
-        "actiune": f"Verificare conform procedurii tehnice pentru defectul {c_class}: {check_action}",
-        "surse": surse
-    }
+    return _build_response_dict(
+        explanation=f"Wafer {wafer_id} from lot {lot_id} exhibits an isolated defect of type '{c_class}' ({conf*100:.1f}% confidence). No drift alarm on lot.",
+        action=f"Verify according to standard procedure for defect {c_class}: {check_action}",
+        sources=sources
+    )
 
 def analyze(wafer_json: dict) -> dict:
     """
-    Punctul de intrare cerut de contractul de integrare: analyze(wafer_json) -> dict
-    Primește datele wafer-ului și returnează un dict cu cheile: 'explicatie', 'actiune', 'surse'.
+    Entry point required by integration contract: analyze(wafer_json) -> dict
+    Receives wafer data and returns a dict with keys: 'explanation', 'action', 'sources'.
     """
     wafer_id = wafer_json.get("wafer_id", "W-101")
     lot_id = wafer_json.get("lot_id", "L-01")
 
-    # Încercare apel API extern (OpenAI-compatible / Qwen3.8-27B) dacă clientul este disponibil
+    # Attempt external API call (OpenAI-compatible / Qwen3.8-27B) if client is available
     try:
         from openai import OpenAI
         client = OpenAI(
@@ -160,10 +175,10 @@ def analyze(wafer_json: dict) -> dict:
 
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"Analizează wafer-ul {wafer_id} din lotul {lot_id}."}
+            {"role": "user", "content": f"Analyze wafer {wafer_id} from lot {lot_id}."}
         ]
 
-        # Buclă ReAct limitată la 5 iterații
+        # ReAct loop limited to 5 iterations
         for _ in range(5):
             completion = client.chat.completions.create(
                 model=MODEL_NAME,
@@ -176,7 +191,7 @@ def analyze(wafer_json: dict) -> dict:
 
             msg = completion.choices[0].message
 
-            # Cazul 1: Modelul cere apelarea uneia sau mai multor unelte
+            # Case 1: Model requests tool calls
             if msg.tool_calls:
                 messages.append(msg)
                 for tool_call in msg.tool_calls:
@@ -186,7 +201,7 @@ def analyze(wafer_json: dict) -> dict:
                     except Exception:
                         args = {}
                     fn = TOOL_ROUTER.get(fn_name)
-                    tool_res = fn(**args) if fn else {"error": f"Tool {fn_name} necunoscut"}
+                    tool_res = fn(**args) if fn else {"error": f"Unknown tool {fn_name}"}
 
                     messages.append({
                         "role": "tool",
@@ -195,7 +210,7 @@ def analyze(wafer_json: dict) -> dict:
                     })
                 continue
 
-            # Cazul 2: Modelul a finalizat raționamentul și returnează textul
+            # Case 2: Model finished reasoning and returns response
             content = msg.content or ""
             text_clean = content.strip()
             if text_clean.startswith("```"):
@@ -203,22 +218,31 @@ def analyze(wafer_json: dict) -> dict:
                 text_clean = text_clean.removeprefix("json")
             try:
                 res_json = json.loads(text_clean.strip())
-                if isinstance(res_json, dict) and {"explicatie", "actiune", "surse"}.issubset(res_json.keys()):
-                    return res_json
+                if isinstance(res_json, dict):
+                    if {"explanation", "action", "sources"}.issubset(res_json.keys()):
+                        res_json.setdefault("explicatie", res_json["explanation"])
+                        res_json.setdefault("actiune", res_json["action"])
+                        res_json.setdefault("surse", res_json["sources"])
+                        return res_json
+                    elif {"explicatie", "actiune", "surse"}.issubset(res_json.keys()):
+                        res_json.setdefault("explanation", res_json["explicatie"])
+                        res_json.setdefault("action", res_json["actiune"])
+                        res_json.setdefault("sources", res_json["surse"])
+                        return res_json
             except json.JSONDecodeError:
                 pass
             break
 
     except Exception:
-        # Fallback catre rationamentul determinist daca serverul extern este inaccesibil
+        # Fallback to deterministic local reasoning if external endpoint is unavailable
         pass
 
-    # Execuție prin motorul ReAct determinist
+    # Execution via deterministic local ReAct engine
     return _execute_local_reasoning(wafer_id, lot_id)
 
 if __name__ == "__main__":
     test_input = {"wafer_id": "W-101", "lot_id": "L-01"}
-    print(f"Testare funcție analyze() cu {test_input}...")
-    rez = analyze(test_input)
-    print("Rezultat obținut:")
-    print(json.dumps(rez, indent=2, ensure_ascii=False))
+    print(f"Testing analyze() function with {test_input}...")
+    res = analyze(test_input)
+    print("Obtained result:")
+    print(json.dumps(res, indent=2, ensure_ascii=False))

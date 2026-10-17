@@ -1,68 +1,68 @@
 {
   "Center": {
     "causes": [
-      "Depunere neuniformă de strat (CVD/PVD)",
-      "Presiune asimetrică la lustruirea mecano-chimică (CMP)",
-      "Variații termice pe centrul platanului de încălzire"
+      "Non-uniform layer deposition (CVD/PVD)",
+      "Asymmetric pressure during chemical-mechanical polishing (CMP)",
+      "Thermal variations across the center of the heating platen"
     ],
-    "check": "Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP."
+    "check": "Check the central gas nozzles in the process chamber and the planarity of the CMP head."
   },
   "Donut": {
     "causes": [
-      "Profil termic inelar sau gradient radial excesiv pe platanul de încălzire",
-      "Flux turbulent de gaz la periferia zonei centrale în reactorul de depunere",
-      "Distribuție neuniformă a suspensiei abrazive (slurry) în procesul CMP"
+      "Annular thermal profile or excessive radial gradient on the heating platen",
+      "Turbulent gas flow at the periphery of the central zone in the deposition reactor",
+      "Non-uniform abrasive slurry distribution in the CMP process"
     ],
-    "check": "Inspectează zonele concentrice de încălzire ale susceptorului și sistemul de distribuție a slurry-ului CMP."
+    "check": "Inspect the concentric heating zones of the susceptor and the CMP slurry distribution system."
   },
   "Edge-Ring": {
     "causes": [
-      "Eroziune a inelului de focalizare (focus ring) în gravarea cu plasmă",
-      "Răcire deficitară cu heliu pe marginea electrostatic chuck-ului (ESC)"
+      "Focus ring erosion in plasma etching",
+      "Deficient helium cooling on the edge of the electrostatic chuck (ESC)"
     ],
-    "check": "Inspectează inelul de focalizare din camera de gravare și presiunea de heliu pe margine."
+    "check": "Inspect the focus ring in the etching chamber and the edge helium pressure."
   },
   "Edge-Loc": {
     "causes": [
-      "Contact mecanic agresiv pe marginea wafer-ului în timpul transferului",
-      "Stres termic localizat la clemele de susținere"
+      "Aggressive mechanical contact on the wafer edge during transfer",
+      "Localized thermal stress at the clamping pins"
     ],
-    "check": "Verifică pinii de aliniere (aligner pins) și forța brațului de prindere mecanică."
+    "check": "Check the aligner pins and the gripping force of the mechanical handling arm."
   },
   "Loc": {
     "causes": [
-      "Defecte locale pe masca fotolitografică (reticle contamination)",
-      "Particulă aderentă în timpul expunerii UV sau depunere neomogenă punctuală",
-      "Blocaj localizat al duzelor de spălare post-gravare"
+      "Local defects on the photolithographic mask (reticle contamination)",
+      "Adherent particle during UV exposure or localized non-homogeneous deposition",
+      "Localized blockage of post-etch rinse nozzles"
     ],
-    "check": "Inspectează reticulul măștii fotolitografice și verifică integritatea duzelor de clătire din camera de proces."
+    "check": "Inspect the photolithographic mask reticle and check the integrity of rinse nozzles in the process chamber."
   },
   "Near-full": {
     "causes": [
-      "Defecțiune generalizată de proces (pierdere totală de vid sau variație critică de putere RF)",
-      "Contaminare masivă a liniei de alimentare cu reactanți chimici",
-      "Eroare severă de calibrare fotolitografică pe întreg wafer-ul"
+      "Widespread process failure (total vacuum loss or critical RF power drift)",
+      "Massive contamination of the chemical precursor supply line",
+      "Severe photolithographic calibration error across the entire wafer"
     ],
-    "check": "Oprește imediat echipamentul de procesare, verifică generatorul RF de plasmă și integritatea camerei de vid."
+    "check": "Immediately shut down the processing equipment, check the plasma RF generator and vacuum chamber integrity."
   },
   "Random": {
     "causes": [
-      "Contaminare cu particule suspendate în camera curată (cleanroom)",
-      "Defectare filtru HEPA/ULPA deasupra stației de lucru"
+      "Suspended particle contamination in the cleanroom",
+      "HEPA/ULPA filter failure above the workstation"
     ],
-    "check": "Măsoară concentrația de particule în incintă și verifică fluxul laminar de aer."
+    "check": "Measure particle concentration in the cleanroom enclosure and verify laminar airflow."
   },
   "Scratch": {
     "causes": [
-      "Zgâriere provocată de brațul robotic de manipulare",
-      "Particule abrazive reziduale pe ventuzele de vid"
+      "Scratching caused by the robotic handling arm",
+      "Residual abrasive particles on vacuum suction cups"
     ],
-    "check": "Inspectează traseul brațului robotizat și curăță pernele de contact cu vid."
+    "check": "Inspect the robotic arm trajectory and clean vacuum suction contact pads."
   },
   "none": {
     "causes": [
-      "Parametri nominali de operare, fără abateri detectate"
+      "Nominal operating parameters, no deviations detected"
     ],
-    "check": "Autorizează transferul lotului către următoarea stație tehnologică."
+    "check": "Authorize batch transfer to the next technological processing step."
   }
 }

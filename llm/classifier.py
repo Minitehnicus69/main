@@ -13,34 +13,34 @@ CLASSES = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Near-full', 'Rand
 
 class WaferCNN(nn.Module):
     """
-    Arhitectura CNN compatibilă cu structura tensorilor din weights.pt.
-    4 blocuri convoluționale urmate de Global Average Pooling și clasificator liniar.
+    CNN architecture compatible with the tensor structure in weights.pt.
+    4 convolutional blocks followed by Global Average Pooling and a linear classifier.
     """
     def __init__(self, num_classes: int = 9):
         super().__init__()
         self.features = nn.Sequential(
-            # Bloc 0: Conv 1 -> 16
+            # Block 0: Conv 1 -> 16
             nn.Sequential(
                 nn.Conv2d(1, 16, kernel_size=3, padding=1),
                 nn.BatchNorm2d(16),
                 nn.ReLU(inplace=True),
                 nn.MaxPool2d(2, 2)
             ),
-            # Bloc 1: Conv 16 -> 32
+            # Block 1: Conv 16 -> 32
             nn.Sequential(
                 nn.Conv2d(16, 32, kernel_size=3, padding=1),
                 nn.BatchNorm2d(32),
                 nn.ReLU(inplace=True),
                 nn.MaxPool2d(2, 2)
             ),
-            # Bloc 2: Conv 32 -> 64
+            # Block 2: Conv 32 -> 64
             nn.Sequential(
                 nn.Conv2d(32, 64, kernel_size=3, padding=1),
                 nn.BatchNorm2d(64),
                 nn.ReLU(inplace=True),
                 nn.MaxPool2d(2, 2)
             ),
-            # Bloc 3: Conv 64 -> 128
+            # Block 3: Conv 64 -> 128
             nn.Sequential(
                 nn.Conv2d(64, 128, kernel_size=3, padding=1),
                 nn.BatchNorm2d(128),
@@ -60,7 +60,7 @@ _global_model: WaferCNN | None = None
 
 def load_trained_model(weights_path: str | None = None) -> WaferCNN:
     """
-    Încarcă ponderile din fișierul weights.pt în modelul CNN.
+    Loads weights from weights.pt into the CNN model.
     """
     global _global_model
     if _global_model is not None:
@@ -82,12 +82,12 @@ def load_trained_model(weights_path: str | None = None) -> WaferCNN:
             model.load_state_dict(state_dict)
             model.eval()
             _global_model = model
-            print(f"[WaferCNN] Model incarcat cu succes din {weights_path}")
+            print(f"[WaferCNN] Model successfully loaded from {weights_path}")
             return _global_model
         except Exception as e:
-            print(f"[WaferCNN] Avertisment la incarcarea ponderilor: {e}")
+            print(f"[WaferCNN] Warning loading weights: {e}")
     else:
-        print(f"[WaferCNN] Fisierul {weights_path} nu a fost gasit. Se foloseste model neinitializat.")
+        print(f"[WaferCNN] File {weights_path} not found. Using uninitialized model.")
     
     model.eval()
     _global_model = model
@@ -95,7 +95,7 @@ def load_trained_model(weights_path: str | None = None) -> WaferCNN:
 
 def predict_wafer(wafer_matrix) -> dict:
     """
-    Primește o matrice a wafer-ului (ex: 26x26, 52x52) și returnează predicția și scorul de încredere.
+    Receives a wafer matrix (e.g. 26x26, 52x52) and returns the prediction and confidence score.
     """
     model = load_trained_model()
     arr = np.array(wafer_matrix, dtype=np.float32)
@@ -123,4 +123,4 @@ if __name__ == "__main__":
     model = load_trained_model()
     dummy_wafer = np.random.rand(26, 26).tolist()
     res = predict_wafer(dummy_wafer)
-    print("Test predictie model CNN:", res)
+    print("CNN model prediction test:", res)

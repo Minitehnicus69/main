@@ -1,27 +1,27 @@
-# Plan de Implementare Pas cu Pas: Modulul 3 (LLM, Agent, RAG)
+# Step-by-Step Implementation Plan: Module 3 (LLM, Agent, RAG)
 
-Acest document detaliază pașii tehnici pentru construirea modulului de decizie și raționament din directorul `llm/`, folosind un model extern apelat prin API (Claude / OpenAI / Gemini), căutare vectorială FAISS pentru documentația tehnică și apelare de unelte (Tool Calling / Function Calling).
+This document details the technical steps for building the decision and reasoning module in the `llm/` directory, using an external API-driven model (Claude / OpenAI / Gemini / Qwen), FAISS vector search for technical documentation, and Tool Calling / Function Calling.
 
 ---
 
-## 1. Structura Fișierelor
+## 1. File Structure
 
 ```text
 llm/
-├── causes.json            # Bază de cunoștințe: Defect -> Cauze fizice -> Verificare
-├── rag.py                 # Procesare PDF, indexare FAISS și căutare semantică
-├── tools.py               # Definirea celor 4 unelte (scheme + mock/integrări)
-├── agent.py               # Bucla ReAct / Tool Use prin API extern (analyze())
-├── demo_scenarios.json    # 6 scenarii de test prestabilite pentru demo
-├── test_agent.py          # Script de validare automată a scenariilor
-└── requirements.txt       # Dependențele modulului
+├── causes.json            # Knowledge base: Defect -> Physical Causes -> Verification Check
+├── rag.py                 # PDF processing, FAISS indexing, and semantic search
+├── tools.py               # Definition of the 4 tools (schemas + mock/integrations)
+├── agent.py               # ReAct loop / Tool Use via external API (analyze())
+├── demo_scenarios.json    # 6 preconfigured test scenarios for demo
+├── test_agent.py          # Automated scenario validation script
+└── requirements.txt       # Module dependencies
 ```
 
 ---
 
-## 2. Dependențe (`requirements.txt`)
+## 2. Dependencies (`requirements.txt`)
 
-Instalați pachetele necesare:
+Install the required packages:
 
 ```text
 anthropic>=0.25.0
@@ -31,69 +31,69 @@ faiss-cpu>=1.8.0
 numpy>=1.26.0
 ```
 
-Comandă de instalare:
+Installation command:
 ```bash
 pip install -r requirements.txt
 ```
 
 ---
 
-## 3. Pasul 1: Baza de Cunoștințe Structurată (`causes.json`)
+## 3. Step 1: Structured Knowledge Base (`causes.json`)
 
-Creați fișierul `llm/causes.json` care corelează tiparele specifice setului de date WM-811K cu cauzele de fabricație și acțiunile recomandate:
+Create `llm/causes.json` mapping WM-811K defect patterns to manufacturing root causes and recommended actions:
 
 ```json
 {
   "Center": {
     "causes": [
-      "Depunere neuniformă de strat (CVD/PVD)",
-      "Presiune asimetrică la lustruirea mecano-chimică (CMP)",
-      "Variații termice pe centrul platanului de încălzire"
+      "Non-uniform layer deposition (CVD/PVD)",
+      "Asymmetric pressure during chemical-mechanical polishing (CMP)",
+      "Thermal variations across the center of the heating platen"
     ],
-    "check": "Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP."
+    "check": "Check the central gas nozzles in the process chamber and the planarity of the CMP head."
   },
   "Edge-Ring": {
     "causes": [
-      "Eroziune a inelului de focalizare (focus ring) în gravarea cu plasmă",
-      "Răcire deficitară cu heliu pe marginea electrostatic chuck-ului (ESC)"
+      "Focus ring erosion in plasma etching",
+      "Deficient helium cooling on the edge of the electrostatic chuck (ESC)"
     ],
-    "check": "Inspectează inelul de focalizare din camera de gravare și presiunea de heliu pe margine."
+    "check": "Inspect the focus ring in the etching chamber and the edge helium pressure."
   },
   "Edge-Loc": {
     "causes": [
-      "Contact mecanic agresiv pe marginea wafer-ului în timpul transferului",
-      "Stres termic localizat la clemele de susținere"
+      "Aggressive mechanical contact on the wafer edge during transfer",
+      "Localized thermal stress at the clamping pins"
     ],
-    "check": "Verifică pinii de aliniere (aligner pins) și forța brațului de prindere mecanică."
+    "check": "Check the aligner pins and the gripping force of the mechanical handling arm."
   },
   "Scratch": {
     "causes": [
-      "Zgâriere provocată de brațul robotic de manipulare",
-      "Particule abrazive reziduale pe ventuzele de vid"
+      "Scratching caused by the robotic handling arm",
+      "Residual abrasive particles on vacuum suction cups"
     ],
-    "check": "Inspectează traseul brațului robotizat și curăță pernele de contact cu vid."
+    "check": "Inspect the robotic arm trajectory and clean vacuum suction contact pads."
   },
   "Random": {
     "causes": [
-      "Contaminare cu particule suspendate în camera curată (cleanroom)",
-      "Defectare filtru HEPA/ULPA deasupra stației de lucru"
+      "Suspended particle contamination in the cleanroom",
+      "HEPA/ULPA filter failure above the workstation"
     ],
-    "check": "Măsoară concentrația de particule în incintă și verifică fluxul laminar de aer."
+    "check": "Measure particle concentration in the cleanroom enclosure and verify laminar airflow."
   },
   "none": {
     "causes": [
-      "Parametri nominali de operare, fără abateri detectate"
+      "Nominal operating parameters, no deviations detected"
     ],
-    "check": "Autorizează transferul lotului către următoarea stație tehnologică."
+    "check": "Authorize batch transfer to the next technological processing step."
   }
 }
 ```
 
 ---
 
-## 4. Pasul 2: Motorul RAG cu Citare Precisă (`rag.py`)
+## 4. Step 2: RAG Engine with Precise Citation (`rag.py`)
 
-Acest fișier încarcă manuale de depanare în format PDF, extrage paginile, le indexează în FAISS și oferă o funcție de căutare ce returnează textul alături de document și pagina exactă.
+This file loads troubleshooting manuals in PDF format, extracts pages, indexes them in FAISS, and provides a search function that returns text along with the exact document name and page number.
 
 ```python
 # llm/rag.py
@@ -103,7 +103,7 @@ import numpy as np
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 
-# Model de embedding compact și rapid pe CPU
+# Compact and fast embedding model on CPU
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
 documents_store = []
@@ -111,7 +111,7 @@ index = None
 
 def build_index(pdf_paths: list[str], chunk_size_words: int = 350):
     """
-    Citește PDF-urile, extrage fragmente pe pagini și construiește indexul FAISS.
+    Reads PDFs, extracts page chunks, and builds the FAISS index.
     """
     global index, documents_store
     documents_store = []
@@ -136,17 +136,17 @@ def build_index(pdf_paths: list[str], chunk_size_words: int = 350):
                     })
 
     if not chunks:
-        # Index mock dacă nu sunt PDF-uri adăugate încă
+        # Default mock index if no external PDFs are provided
         documents_store = [
             {
                 "doc": "manual_cvd_standard.pdf",
                 "page": 14,
-                "text": "Defectele centrale (Center) indică neuniformități de debit gaz CVD sau temperatură asimetrică a platanului."
+                "text": "Central defects (Center) indicate CVD gas flow non-uniformities or asymmetric temperature of the heating platen."
             },
             {
                 "doc": "manual_etch_troubleshooting.pdf",
                 "page": 29,
-                "text": "Pattern-ul Edge-Ring este cauzat în mod frecvent de degradarea fizică a inelului de focalizare (focus ring)."
+                "text": "The Edge-Ring pattern is frequently caused by physical degradation and erosion of the focus ring."
             }
         ]
         chunks = [d["text"] for d in documents_store]
@@ -157,9 +157,9 @@ def build_index(pdf_paths: list[str], chunk_size_words: int = 350):
     index = faiss.IndexFlatIP(dim)
     index.add(embeddings)
 
-def cauta_manual(query: str, top_k: int = 1) -> list[dict]:
+def search_manual(query: str, top_k: int = 1) -> list[dict]:
     """
-    Returnează fragmentele cele mai relevante împreună cu metadatele de citare.
+    Returns the most relevant chunks along with citation metadata.
     """
     global index
     if index is None:
@@ -174,97 +174,100 @@ def cauta_manual(query: str, top_k: int = 1) -> list[dict]:
         if idx != -1 and idx < len(documents_store):
             results.append(documents_store[idx])
     return results
+
+# Backwards compatibility alias
+cauta_manual = search_manual
 ```
 
 ---
 
-## 5. Pasul 3: Definirea Celor 4 Unelte (`tools.py`)
+## 5. Step 3: Defining the 4 Tools (`tools.py`)
 
-Fișierul conține definițiile JSON Schema pentru Tool Calling și implementările funcțiilor (mock-uri inițiale, ușor de conectat la modulele #1, #2 și #4).
+This file contains JSON Schema definitions for Tool Calling and function implementations (functional mocks that connect to modules #1, #2, and #4).
 
 ```python
 # llm/tools.py
-from rag import cauta_manual
+from rag import search_manual
 
-# 1. Implementările funcțiilor (Mock-uri funcționale)
-def tool_clasifica(wafer_id: str) -> dict:
-    # Va apela direct modelul CNN al echipei #1
+# 1. Tool implementations (functional mocks)
+def tool_classify(wafer_id: str) -> dict:
+    # Connects directly to Team #1 CNN model
     mock_db = {
         "W-101": {"class": "Edge-Ring", "confidence": 0.91},
         "W-102": {"class": "Center", "confidence": 0.96},
-        "W-103": {"class": "necunoscut", "confidence": 0.32},
+        "W-103": {"class": "unknown", "confidence": 0.32},
         "W-104": {"class": "Scratch", "confidence": 0.88},
         "W-105": {"class": "none", "confidence": 0.99},
         "W-106": {"class": "Center", "confidence": 0.65}
     }
     return mock_db.get(wafer_id, {"class": "Center", "confidence": 0.85})
 
-def tool_verifica_drift(lot_id: str) -> dict:
-    # Verifică dacă 3 din ultimele 5 wafere din lot au aceeași clasă defectă
+def tool_check_drift(lot_id: str) -> dict:
+    # Checks if 3 of the last 5 wafers in the lot have the same defect class
     if lot_id == "LOT-CRITIC" or lot_id == "L-02":
         return {"lot_id": lot_id, "alarm": True, "repeated_class": "Center", "count": 3}
     return {"lot_id": lot_id, "alarm": False, "repeated_class": "none", "count": 0}
 
-def tool_gaseste_similare(wafer_id: str) -> list[dict]:
-    # Va apela căutarea pe vectorii de embeddings.npy
+def tool_find_similar(wafer_id: str) -> list[dict]:
+    # Queries the embedding vectors from embeddings.npy
     return [
         {"wafer_id": "W-HIST-441", "class": "Center", "similarity": 0.93},
         {"wafer_id": "W-HIST-812", "class": "Center", "similarity": 0.89}
     ]
 
-def tool_cauta_manual(query: str) -> list[dict]:
-    return cauta_manual(query, top_k=1)
+def tool_search_manual(query: str) -> list[dict]:
+    return search_manual(query, top_k=1)
 
-# Mapare nume -> funcție executabilă
+# Name -> executable function routing
 TOOL_ROUTER = {
-    "clasifica": tool_clasifica,
-    "verifica_drift": tool_verifica_drift,
-    "gaseste_similare": tool_gaseste_similare,
-    "cauta_manual": tool_cauta_manual
+    "classify": tool_classify,
+    "check_drift": tool_check_drift,
+    "find_similar": tool_find_similar,
+    "search_manual": tool_search_manual
 }
 
-# Scheme transmise către LLM (compatibile Anthropic API)
+# Schemas passed to LLM (Anthropic API compatible)
 TOOLS_DEFINITIONS = [
     {
-        "name": "clasifica",
-        "description": "Obține clasa defectului și scorul de încredere pentru wafer din modelul CNN.",
+        "name": "classify",
+        "description": "Obtain defect class and confidence score for a wafer from the CNN model.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "wafer_id": {"type": "string", "description": "ID-ul unic al wafer-ului"}
+                "wafer_id": {"type": "string", "description": "Unique identifier of the wafer"}
             },
             "required": ["wafer_id"]
         }
     },
     {
-        "name": "verifica_drift",
-        "description": "Verifică dacă s-a declanșat o alarmă de drift (același defect repetat în lotul curent).",
+        "name": "check_drift",
+        "description": "Check if a drift alarm has been triggered (repeated defect in current lot).",
         "input_schema": {
             "type": "object",
             "properties": {
-                "lot_id": {"type": "string", "description": "ID-ul lotului de producție"}
+                "lot_id": {"type": "string", "description": "Production lot ID"}
             },
             "required": ["lot_id"]
         }
     },
     {
-        "name": "gaseste_similare",
-        "description": "Găsește wafere similare din baza istorică de fabricație pe baza spațiului de embedding.",
+        "name": "find_similar",
+        "description": "Find similar wafers in historical database based on embedding space.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "wafer_id": {"type": "string", "description": "ID-ul wafer-ului curent"}
+                "wafer_id": {"type": "string", "description": "Current wafer ID"}
             },
             "required": ["wafer_id"]
         }
     },
     {
-        "name": "cauta_manual",
-        "description": "Caută proceduri de intervenție și cauze fizice în manualele tehnice de proces.",
+        "name": "search_manual",
+        "description": "Search intervention procedures and physical causes in process technical manuals.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "Cuvinte cheie sau descrierea defectului"}
+                "query": {"type": "string", "description": "Keywords or defect description"}
             },
             "required": ["query"]
         }
@@ -274,9 +277,9 @@ TOOLS_DEFINITIONS = [
 
 ---
 
-## 6. Pasul 4: Bucla Agentului (`agent.py`)
+## 6. Step 4: Agent Loop (`agent.py`)
 
-Acest fișier exportă funcția `analyze(wafer_json)` care este consumată direct de modulul de Backend (`api/`).
+This file exports the `analyze(wafer_json)` function consumed by the Backend (`api/`).
 
 ```python
 # llm/agent.py
@@ -287,29 +290,29 @@ from tools import TOOL_ROUTER, TOOLS_DEFINITIONS
 
 client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", "MOCK_KEY"))
 
-SYSTEM_PROMPT = """Ești un agent expert în diagnosticarea procesului de fabricație a wafer-elor de siliciu.
-Obiectivul tău:
-1. Analizează starea wafer-ului și a lotului apelând uneltele necesare (clasifica, verifica_drift, etc.).
-2. Dacă încrederea este scăzută, verifică wafere similare. Dacă apare un defect, caută în manual cauza și acțiunea corectivă.
-3. Răspunsul FINAL trebuie să fie STRICT un obiect JSON valid, fără text suplimentar în afara lui:
+SYSTEM_PROMPT = """You are an expert agent in silicon wafer manufacturing process diagnostics.
+Your objective:
+1. Analyze wafer and lot status by calling the required tools (classify, check_drift, etc.).
+2. If confidence is low, verify similar wafers. If a defect is found, search the manual for root cause and corrective action.
+3. The FINAL response must STRICTLY be a valid JSON object without surrounding text:
 {
-  "explicatie": "Descrierea defectului, nivelul de încredere și starea de drift din lot.",
-  "actiune": "Măsura tehnică recomandată pentru operator/inginer.",
-  "surse": ["nume_document.pdf (p. X)", "causes.json"]
+  "explanation": "Defect description, confidence level, and lot drift status.",
+  "action": "Recommended technical action for operator/engineer.",
+  "sources": ["document_name.pdf (p. X)", "causes.json"]
 }"""
 
 def analyze(wafer_json: dict) -> dict:
     """
-    Punctul de intrare cerut de contractul de integrare: analyze(wafer_json) -> dict
+    Entry point required by integration contract: analyze(wafer_json) -> dict
     """
     wafer_id = wafer_json.get("wafer_id", "W-101")
     lot_id = wafer_json.get("lot_id", "L-01")
 
     messages = [
-        {"role": "user", "content": f"Analizează wafer-ul {wafer_id} din lotul {lot_id}."}
+        {"role": "user", "content": f"Analyze wafer {wafer_id} from lot {lot_id}."}
     ]
 
-    # Buclă ReAct limitată la 5 iterații
+    # ReAct loop limited to 5 iterations
     for _ in range(5):
         response = client.messages.create(
             model="claude-3-5-haiku-20241022",
@@ -319,7 +322,7 @@ def analyze(wafer_json: dict) -> dict:
             messages=messages
         )
 
-        # Cazul 1: LLM-ul solicită apelul uneia sau mai multor unelte
+        # Case 1: LLM requests tool execution
         if response.stop_reason == "tool_use":
             messages.append({"role": "assistant", "content": response.content})
             tool_results = []
@@ -330,7 +333,7 @@ def analyze(wafer_json: dict) -> dict:
                     args = block.input
                     
                     fn = TOOL_ROUTER.get(fn_name)
-                    res = fn(**args) if fn else {"error": f"Tool {fn_name} necunoscut"}
+                    res = fn(**args) if fn else {"error": f"Unknown tool {fn_name}"}
                     
                     tool_results.append({
                         "type": "tool_result",
@@ -341,79 +344,79 @@ def analyze(wafer_json: dict) -> dict:
             messages.append({"role": "user", "content": tool_results})
             continue
 
-        # Cazul 2: LLM-ul a terminat raționamentul și oferă răspunsul final
+        # Case 2: LLM completed reasoning and provides final response
         for block in response.content:
             if hasattr(block, "text"):
                 text_content = block.text.strip()
-                # Curățare markdown code block dacă există
                 if text_content.startswith("```"):
                     text_content = text_content.split("```")[1]
                     if text_content.startswith("json"):
                         text_content = text_content[4:]
                 try:
-                    return json.loads(text_content.strip())
+                    res_json = json.loads(text_content.strip())
+                    return res_json
                 except json.JSONDecodeError:
                     return {
-                        "explicatie": text_content,
-                        "actiune": "Inspecție manuală recomandată.",
-                        "surse": ["causes.json"]
+                        "explanation": text_content,
+                        "action": "Manual inspection recommended.",
+                        "sources": ["causes.json"]
                     }
 
-    return {"error": "Depășire număr maxim de pași de raționament."}
+    return {"error": "Maximum reasoning step limit reached."}
 ```
 
 ---
 
-## 7. Pasul 5: Cele 6 Scenarii de Demo (`demo_scenarios.json`)
+## 7. Step 5: The 6 Demo Scenarios (`demo_scenarios.json`)
 
-Scenariile demonstrează adaptabilitatea agentului în diferite contexte de producție:
+Scenarios demonstrating agent adaptability across production contexts:
 
 ```json
 [
   {
     "id": 1,
-    "title": "Defect izolat Edge-Ring",
+    "title": "Isolated Edge-Ring Defect",
     "input": {"wafer_id": "W-101", "lot_id": "L-01"},
-    "expected_type": "Edge-Ring izolat, verificare focus ring la final de tură"
+    "expected_type": "Isolated Edge-Ring, verify focus ring at end of shift"
   },
   {
     "id": 2,
-    "title": "Alarmă critică de drift (Center repetat)",
+    "title": "Critical Drift Alarm (Repeated Center)",
     "input": {"wafer_id": "W-102", "lot_id": "LOT-CRITIC"},
-    "expected_type": "Alarmă drift activă; oprire imediată a camerei CVD"
+    "expected_type": "Active drift alarm; immediate shutdown of CVD chamber"
   },
   {
     "id": 3,
-    "title": "Pattern necunoscut (Out-of-Distribution)",
+    "title": "Unknown Pattern (Out-of-Distribution)",
     "input": {"wafer_id": "W-103", "lot_id": "L-03"},
-    "expected_type": "Defect necunoscut; marcare pentru etichetare de către inginer"
+    "expected_type": "Unknown defect; flag for labeling by process engineer"
   },
   {
     "id": 4,
-    "title": "Zgârietură mecanică (Scratch)",
+    "title": "Mechanical Scratch",
     "input": {"wafer_id": "W-104", "lot_id": "L-04"},
-    "expected_type": "Defect Scratch; inspectare braț robotizat și traseu de transfer"
+    "expected_type": "Scratch defect; inspect robotic arm and transfer path"
   },
   {
     "id": 5,
-    "title": "Wafer nominal curat (None)",
+    "title": "Nominal Clean Wafer (None)",
     "input": {"wafer_id": "W-105", "lot_id": "L-05"},
-    "expected_type": "Fără defect; autorizare trecere la următorul pas"
+    "expected_type": "No defect; authorize transfer to next step"
   },
   {
     "id": 6,
-    "title": "Încredere scăzută cu validare prin similaritate",
+    "title": "Low Confidence with Similarity Validation",
     "input": {"wafer_id": "W-106", "lot_id": "L-06"},
-    "expected_type": "Apelare gaseste_similare pentru confirmarea clasei ambigue"
+    "expected_type": "Call find_similar to confirm ambiguous class"
   }
 ]
 ```
 
 ---
 
-## 8. Pasul 6: Testare și Validare Automată (`test_agent.py`)
+## 8. Step 6: Testing and Automated Validation (`test_agent.py`)
 
-Rulați acest script pentru a asigura stabilitatea livrabilelor:
+Run this script to ensure stability:
 
 ```python
 # llm/test_agent.py
@@ -425,24 +428,24 @@ def run_tests():
     with open("demo_scenarios.json", "r", encoding="utf-8") as f:
         scenarios = json.load(f)
 
-    print(f"Începere teste pentru {len(scenarios)} scenarii...\n")
-    required_keys = {"explicatie", "actiune", "surse"}
+    print(f"Starting tests for {len(scenarios)} scenarios...\n")
+    required_keys = {"explanation", "action", "sources"}
 
     for item in scenarios:
-        print(f"Testare Scenariu #{item['id']}: {item['title']}...")
+        print(f"Testing Scenario #{item['id']}: {item['title']}...")
         result = analyze(item["input"])
         
-        # Validare schemă JSON de ieșire
+        # Output JSON schema validation
         if not isinstance(result, dict) or not required_keys.issubset(result.keys()):
-            print(f"❌ EȘEC: Răspunsul nu conține cheile obligatorii: {result}")
+            print(f"❌ FAILURE: Response missing required keys: {result}")
             return
         
-        print(f"  ✓ Explicație: {result['explicatie'][:80]}...")
-        print(f"  ✓ Acțiune:    {result['actiune'][:80]}...")
-        print(f"  ✓ Surse:      {result['surse']}")
+        print(f"  ✓ Explanation: {result['explanation'][:80]}...")
+        print(f"  ✓ Action:      {result['action'][:80]}...")
+        print(f"  ✓ Sources:     {result['sources']}")
         print("  Status: OK\n")
 
-    print("Toate scenariile au trecut cu succes!")
+    print("All scenarios passed successfully!")
 
 if __name__ == "__main__":
     run_tests()
@@ -450,8 +453,8 @@ if __name__ == "__main__":
 
 ---
 
-## 9. Checklist de Integrare cu Restul Echipelor
+## 9. Integration Checklist with Other Teams
 
-- [ ] **Cu Backend (#4):** Colegul de la backend importă doar `from llm.agent import analyze`. Endpoint-ul `POST /analyze` pasează payload-ul către funcție și returnează rezultatul JSON direct către interfață.
-- [ ] **Cu Modelul Vizual (#1):** În `llm/tools.py`, corpul funcției `tool_clasifica` se înlocuiește cu apelul real către model: `model.predict(wafer_matrix)`.
-- [ ] **Cu Date & Evaluare (#2):** În `llm/tools.py`, se apelează `is_unknown(wafer_matrix)`. Dacă este adevărat, `tool_clasifica` returnează clasa `"necunoscut"`.
+- [ ] **With Backend (#4):** Backend imports `from llm.agent import analyze`. The `POST /analyze` endpoint passes the payload to the function and returns the JSON result directly to the frontend.
+- [ ] **With Visual Model (#1):** In `llm/tools.py`, the body of `tool_classify` connects directly to the real model: `model.predict(wafer_matrix)`.
+- [ ] **With Data & Evaluation (#2):** In `llm/tools.py`, calls `is_unknown(wafer_matrix)`. If true, `tool_classify` returns the class `"unknown"`.
