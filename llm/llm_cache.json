@@ -106,5 +106,45 @@
  "4a1aef67ad5502be18fadc380866e165b3d24fd6": {
   "explicatie": "Clasa Center (încredere 84.5%) este confirmată de istoric (acord 1.0). Alarma de drift este activă: aceeași clasă apare pe 5 din ultimele 5 wafere din fereastră, deci tot lotul trebuie verificat, nu doar wafer-ul curent. Cauze probabile: depunere neuniformă (CVD/PVD), presiune asimetrică la CMP sau variații termice pe centrul platanului.",
   "actiune": "Verifică duzele centrale de gaz din camera de proces și planeitatea capului CMP. Inspectează lotul complet pentru abateri similare."
+ },
+ "9ec22e56f341e97c3d93f83496f140ce8945c597": {
+  "explicatie": "Clasa Edge-Ring este confirmată cu încredere maximă (0.999) și istoricul este perfect relevant (acord 1.0). Cauzele probabile sunt eroziunea inelului de focalizare în gravarea cu plasmă sau răcirea deficitară cu heliu pe marginea electrostatic chuck-ului (ESC). Deoarece alarma de drift este activă (aceeași clasă apare pe 3 din ultimele 5 wafere), problema este sistemică și afectează tot lotul, nu doar wafer-ul curent.",
+  "actiune": "Verifică imediat inelul de focalizare din camera de gravare și presiunea de heliu pe marginea ESC. Oprește procesarea și inspectează tot lotul B, deoarece eroarea se repetă."
+ },
+ "dec81d76fcf688c90cce7c413ecf512259b7ff2d": {
+  "explicatie": "Edge-Ring is likely caused by focus ring erosion in plasma etch or insufficient helium backside cooling at the edge of the ESC. The history strongly confirms this class (acord_vecini 1.0). Drift alarm is true: Edge-Ring appears in 3 of the last 5 wafers, so the whole lot B must be checked, not only wafer B_w10.",
+  "actiune": "Inspect the focus ring in the etch chamber and check the edge helium pressure. Review all wafers in lot B for the same Edge-Ring pattern."
+ },
+ "720759afe649794654bd16fa059ea19a88d1eec9": {
+  "explicatie": "The current wafer is classified as Edge-Loc with low confidence (52%), and historical data does not confirm this specific pattern (similarity score 0.0). However, a drift alarm is active because the Edge-Ring pattern has appeared on 4 of the last 5 wafers. The most similar historical wafers are all classified as Edge-Ring. The manual links Edge-Ring patterns to focus ring erosion or insufficient helium backside cooling at the edge of the electrostatic chuck.",
+  "actiune": "Verify the entire lot due to the drift alarm. Inspect the focus ring in the etch chamber and check the edge helium pressure. Investigate the aligner pins and mechanical arm gripping force to rule out Edge-Loc causes."
+ },
+ "6cb5f773821af6bb84f45ca3cf8ac9f190fdf6d9": {
+  "explicatie": "Wafer C_w15 shows a high-confidence Center defect pattern, confirmed by historical data. This pattern is likely caused by non-uniform film deposition, asymmetric pressure during CMP, or thermal variation at the center of the heater platen. A drift alarm is active because this defect class appeared on 3 of the last 5 wafers, indicating a recurring issue rather than an isolated event.",
+  "actiune": "Inspect the central gas nozzles in the process chamber and verify the flatness of the CMP head. Since the drift alarm is active, the entire lot must be checked, not just this wafer."
+ },
+ "8045ea4e61cfa769d3025c224dde1ee10b8dd5c8": {
+  "explicatie": "The wafer shows an Edge-Ring defect pattern with high confidence, confirmed by historical data. This pattern is likely caused by erosion of the focus ring in the plasma etch chamber or insufficient helium backside cooling at the edge of the electrostatic chuck (ESC). A drift alarm is active because this defect class appeared on 3 of the last 5 wafers, indicating a recurring issue rather than an isolated event.",
+  "actiune": "Inspect the focus ring in the etch chamber and check the edge helium pressure. Since the alarm is triggered, verify the entire lot, not just this wafer."
+ },
+ "e21e89ea783a5c48184b37f03b280b6d18433e98": {
+  "explicatie": "The wafer is classified as Edge-Loc with low confidence (0.52). The historical similarity score is exactly at the threshold (0.6), so the history does not strongly confirm this specific class. However, a drift alarm is active because the Edge-Ring class appeared in 4 of the last 5 wafers. The most similar historical wafers are actually classified as Edge-Ring, suggesting the current wafer might be misclassified or part of the same Edge-Ring trend. Edge-Loc is possibly caused by mechanical contact during transfer or thermal stress at clamping points. Edge-Ring is likely caused by focus ring erosion or insufficient helium backside cooling.",
+  "actiune": "Verify the entire lot, not just this wafer, due to the drift alarm. Inspect the aligner pins and mechanical arm gripping force for Edge-Loc causes. Also, inspect the focus ring in the etch chamber and edge helium pressure, as the trend and similar history point to Edge-Ring issues."
+ },
+ "cfad2062364678a2e99f6cb10431c7cb1b27d0ac": {
+  "explicatie": "The wafer exhibits a Center defect pattern with high confidence. Historical data strongly confirms this classification. Probable causes include non-uniform film deposition from CVD/PVD, asymmetric pressure during CMP, or thermal variation at the center of the heater platen.",
+  "actiune": "Check the central gas nozzles in the process chamber and the flatness of the CMP head."
+ },
+ "7fc588a2b9990e5fe0f5d2bdf25c9106efef3b50": {
+  "explicatie": "The wafer is classified as Edge-Loc with 82% confidence, and historical data strongly supports this pattern. The defect is likely caused by aggressive mechanical contact on the wafer edge during transfer or localized thermal stress at clamping points. Manual references indicate that Edge-Loc defects often result from abnormal mechanical forces during robotic handling.",
+  "actiune": "Check the aligner pins and the gripping force of the mechanical arm. Since the same defect class appeared on 3 of the last 5 monitored wafers, the entire lot must be verified, not just this wafer."
+ },
+ "f6d466801d91af87273cc5896a2c5bdd183f7035": {
+  "explicatie": "Wafer 002 is classified as Near-full with high confidence (0.996). This pattern indicates a widespread process failure, possibly due to total vacuum loss, critical RF power variation, massive contamination of the chemical reactant supply line, or severe lithography calibration error across the whole wafer. Historical data strongly confirms this classification.",
+  "actiune": "Stop the process tool immediately, check the plasma RF generator and the vacuum chamber integrity."
+ },
+ "1d41c96c441ac2f7e4ee0f47865c5d010bb8d2ca": {
+  "explicatie": "The wafer shows a Center defect pattern with high confidence. Historical data strongly confirms this classification. Probable causes include non-uniform film deposition, asymmetric pressure during CMP, or thermal variation at the center of the heater platen.",
+  "actiune": "Check the central gas nozzles in the process chamber and the flatness of the CMP head."
  }
 }

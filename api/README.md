@@ -14,6 +14,7 @@ python -m venv .venv
 .\.venv\Scripts\uvicorn api.main:app --reload --port 8000
 ```
 
+Interfața (din `ui/`, servită de același server): http://localhost:8000
 Documentația interactivă: http://localhost:8000/docs
 
 Fără `weights.pt` / `history.npz`, `POST /analyze` întoarce `api/mock_response.json` (vezi `GET /health` → `"mode": "mock"`),
@@ -30,6 +31,11 @@ ca UI-ul să aibă oricând ce apela.
 | POST | `/feedback` | Salvează „corect/greșit” (SQLite, `api/feedback.db`) |
 | GET | `/feedback` | Ultimele feedback-uri |
 | POST | `/cost` | Recalculează costul pentru slidere, fără să ruleze modelul |
+| POST | `/upload` | Fișiere încărcate (JSON, CSV/TXT, NPY/NPZ, PNG/JPG) → hărți 0/1/2 validate; analiza se face apoi cu `/analyze` sau `/lot` |
+| GET | `/upload/sample?fmt=json\|csv` | Fișier de exemplu: câte un wafer real din istoric pentru fiecare clasă |
+
+**Upload:** `curl -F files=@wafers.json -F files=@map.png localhost:8000/upload`. Erorile sunt per fișier (`errors`),
+nu opresc restul. Fișierele pickle sunt refuzate (deserializarea lor poate rula cod).
 
 ## Exemple curl
 
@@ -110,6 +116,10 @@ Cheile pe care le citește `ui/app.py` (`class_name`, `confidence`, `is_defect`,
   "gradcam_png": "iVBORw0..."       // PNG base64: st.image(base64.b64decode(r["gradcam_png"]))
 }
 ```
+
+**Limba textului:** `/analyze` și `/lot` acceptă `"lang": "en"` (implicit `"ro"`). Explicația și acțiunea vin atunci
+în engleză (prompt LLM + `llm/causes_en.json`). Răspunsul are și `ai_generated`: `true` dacă textul vine de la LLM,
+`false` dacă e răspunsul determinist (LLM oprit, timeout, wafer necunoscut sau nesigur). UI-ul cere mereu `en`.
 
 ## Reguli
 

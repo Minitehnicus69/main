@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WaferSight · Yield Intelligence</title>
+  <meta name="description" content="Wafer map defect classification, lot drift detection and cost-based line decisions.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231d4ed8'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='white' stroke-width='2'/%3E%3Cpath d='M11 16h10M16 11v10' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-wafer" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 9h10M6 12h12M7 15h10M9 6.5v11M12 3v18M15 6.5v11"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5" opacity=".5"/></symbol>
+  <symbol id="i-check-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5M12 18v.01"/></symbol>
+  <symbol id="i-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H6a1 1 0 00-1 1v16a1 1 0 001 1h12a1 1 0 001-1V8z"/><path d="M14 3v5h5M8 13h8M8 17h5"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 4v7h-7"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"/></symbol>
+</svg>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg><use href="#i-wafer"/></svg></div>
+      <div>
+        <div class="brand-name">WaferSight</div>
+        <div class="brand-sub">Yield Intelligence</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-label">Monitoring</div>
+      <button class="nav-item active" data-view="overview"><svg><use href="#i-grid"/></svg>Fab Overview</button>
+      <button class="nav-item" data-view="lot"><svg><use href="#i-layers"/></svg>Lot Monitor</button>
+      <div class="nav-label">Analysis</div>
+      <button class="nav-item" data-view="analyze"><svg><use href="#i-wafer"/></svg>Wafer Inspection</button>
+      <button class="nav-item" data-view="upload"><svg><use href="#i-upload"/></svg>Upload Wafers<span class="nav-count hidden" id="nav-up-count"></span></button>
+      <button class="nav-item" data-view="feedback"><svg><use href="#i-check-list"/></svg>Review Log</button>
+    </nav>
+    <div class="sys">
+      <div class="nav-label">System status</div>
+      <div class="sys-row" id="st-model"><i></i><span>Vision model</span><b>…</b></div>
+      <div class="sys-row" id="st-rag"><i></i><span>Knowledge base</span><b>…</b></div>
+      <div class="sys-row" id="st-llm"><i></i><span>Reasoning agent</span><b>…</b></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <!-- ================= OVERVIEW ================= -->
+    <section class="view active" id="view-overview">
+      <header class="page-h">
+        <div>
+          <div class="crumb">Monitoring</div>
+          <h1>Fab Overview</h1>
+          <p class="page-sub">Live status of every lot on the line: defect rate, dominant pattern and drift alarms.</p>
+        </div>
+        <div class="page-actions">
+          <span class="muted small" id="o-updated"></span>
+          <button class="btn" id="o-refresh"><svg><use href="#i-refresh"/></svg>Refresh</button>
+        </div>
+      </header>
+      <div class="kpis" id="o-kpis">
+        <div class="kpi skeleton"></div><div class="kpi skeleton"></div><div class="kpi skeleton"></div><div class="kpi skeleton"></div>
+      </div>
+      <div class="card flush">
+        <div class="card-h pad"><h3>Lots</h3><span class="muted small">Pattern sequence in test order · click a lot for details</span></div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Lot</th><th>Tool</th><th>Status</th><th class="num">Defect rate</th><th>Dominant pattern</th><th class="seq-col">Sequence · 25 wafers</th><th></th></tr></thead>
+            <tbody id="o-lots"><tr><td colspan="7" class="empty-row">Loading lots…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="grid-2 align-start">
+        <div class="card">
+          <div class="card-h"><h3>Active drift alarms</h3><span class="muted small">requires engineering attention</span></div>
+          <div class="alerts" id="o-alerts"></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>Defect pattern distribution</h3><span class="muted small">all lots</span></div>
+          <div class="dist" id="o-dist"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= LOT MONITOR ================= -->
+    <section class="view" id="view-lot">
+      <header class="page-h">
+        <div>
+          <div class="crumb">Monitoring</div>
+          <h1>Lot Monitor</h1>
+          <p class="page-sub">Replays a lot in test order. A drift alarm fires when the same defect appears on at least 3 of the last 5 wafers.</p>
+        </div>
+      </header>
+      <div class="card toolbar">
+        <label class="field">Lot<select id="l-lot"></select></label>
+        <div class="field-info" id="l-equip"></div>
+        <label class="switch"><input type="checkbox" id="l-llm" checked><span></span>AI root-cause analysis on alarm</label>
+        <button class="btn primary" id="l-run"><svg><use href="#i-play"/></svg>Run lot</button>
+      </div>
+
+      <div class="empty" id="l-empty">
+        <div class="empty-icon"><svg><use href="#i-layers"/></svg></div>
+        <h2>Select a lot to replay</h2>
+        <p>Each wafer is classified in the order it was tested; the first wafer that triggers a drift alarm receives a full root-cause analysis and a cost recommendation.</p>
+      </div>
+
+      <div class="results hidden" id="l-results">
+        <div class="kpis" id="l-kpis"></div>
+        <div class="card">
+          <div class="card-h"><h3>Classification confidence by wafer</h3><div class="legend" id="l-legend"></div></div>
+          <div class="chart" id="l-chart"></div>
+        </div>
+        <div class="card hidden" id="l-alarm"></div>
+        <div class="card">
+          <div class="card-h"><h3>Wafer maps</h3><div class="legend"><span><i class="lg-alarm"></i>Alarm active</span><span class="muted">Click a wafer to inspect it</span></div></div>
+          <div class="lot-grid" id="l-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= WAFER INSPECTION ================= -->
+    <section class="view" id="view-analyze">
+      <header class="page-h">
+        <div>
+          <div class="crumb">Analysis</div>
+          <h1>Wafer Inspection</h1>
+          <p class="page-sub">CNN classification, out-of-distribution check, similar historical cases, drift context and AI root-cause analysis.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn hidden" id="a-print"><svg><use href="#i-print"/></svg>Export report</button>
+        </div>
+      </header>
+
+      <div class="card toolbar">
+        <div class="seg" id="src-seg">
+          <button class="active" data-src="lot">From lot</button>
+          <button data-src="history">From history</button>
+          <button data-src="uploaded">Uploaded</button>
+        </div>
+        <div class="src-fields" data-src="lot">
+          <label class="field">Lot<select id="a-lot"></select></label>
+          <label class="field">Wafer<select id="a-wafer"></select></label>
+        </div>
+        <div class="src-fields hidden" data-src="history">
+          <label class="field">History index<input id="a-hist" type="number" min="0" value="123"></label>
+          <div class="field-info" id="a-hist-info"></div>
+        </div>
+        <div class="src-fields hidden" data-src="uploaded">
+          <label class="field" id="a-up-field">Wafer<select id="a-up"></select></label>
+          <label class="field">Lot ID <em>optional</em><input id="a-up-lot" type="text" placeholder="e.g. LOT-X"></label>
+          <div class="field-info hidden" id="a-up-empty">No uploaded wafers yet. <a href="#" id="a-up-go">Upload wafers →</a></div>
+        </div>
+        <div class="toggles">
+          <label class="switch"><input type="checkbox" id="a-llm" checked><span></span>AI analysis</label>
+          <label class="switch"><input type="checkbox" id="a-cam" checked><span></span>Grad-CAM</label>
+        </div>
+        <button class="btn primary" id="a-run"><svg><use href="#i-play"/></svg>Inspect wafer</button>
+      </div>
+
+      <div class="empty" id="a-empty">
+        <div class="empty-icon"><svg><use href="#i-wafer"/></svg></div>
+        <h2>Select a wafer to inspect</h2>
+        <p>Pick a wafer from a lot, an index from the 30k-wafer history, or upload your own wafer map.</p>
+      </div>
+
+      <div class="results hidden" id="a-results">
+        <div class="report-meta" id="a-meta"></div>
+
+        <div class="grid-2">
+          <div class="card verdict" id="a-verdict"></div>
+          <div class="card decision" id="a-decision"></div>
+        </div>
+
+        <div class="grid-2 align-start">
+          <div class="card">
+            <div class="card-h"><h3>Wafer map</h3><div class="legend"><span><i class="lg-ok"></i>Pass die</span><span><i class="lg-fail"></i>Fail die</span></div></div>
+            <div class="maps">
+              <figure><canvas id="a-map" class="wafer-lg"></canvas><figcaption>Inspected map · 64 × 64</figcaption></figure>
+              <figure id="a-cam-fig"><img id="a-cam-img" alt="Grad-CAM heatmap" class="wafer-lg"><figcaption>Grad-CAM · regions driving the prediction</figcaption></figure>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card" id="a-drift"></div>
+            <div class="card">
+              <div class="card-h"><h3>Root-cause analysis</h3><span class="tag" id="a-src-label"></span></div>
+              <p class="explanation" id="a-expl"></p>
+              <div class="action" id="a-action-box"><div class="action-h">Recommended action</div><div id="a-action"></div></div>
+              <div class="refs" id="a-sources"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h3>Most similar historical wafers</h3><span class="muted small">cosine similarity of CNN embeddings</span></div>
+          <div class="similar" id="a-similar"></div>
+        </div>
+
+        <div class="grid-2 no-print">
+          <div class="card">
+            <div class="card-h"><h3>Cost assumptions</h3><span class="muted small">adjust to see how the recommendation changes</span></div>
+            <div class="sliders">
+              <label>Wafer value <output id="o-pret"></output><input type="range" id="s-pret" min="100" max="10000" step="100" value="1500"></label>
+              <label>Downtime for inspection <output id="o-ore"></output><input type="range" id="s-ore" min="0.5" max="12" step="0.5" value="2"></label>
+              <label>Line cost per hour <output id="o-ora"></output><input type="range" id="s-ora" min="500" max="30000" step="500" value="5000"></label>
+              <label>Wafers remaining in lot <output id="o-ram"></output><input type="range" id="s-ram" min="0" max="25" step="1" value="15"></label>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h3>Engineer review</h3></div>
+            <p class="muted small fb-note">Confirmed labels are added to the similarity search and improve future matches.</p>
+            <div class="fb-row">
+              <button class="btn ok" id="fb-yes"><svg><use href="#i-ok"/></svg>Confirm prediction</button>
+              <button class="btn bad" id="fb-no"><svg><use href="#i-x"/></svg>Correct prediction</button>
+            </div>
+            <div class="fb-wrong hidden" id="fb-wrong">
+              <label class="field">Correct class<select id="fb-class"></select></label>
+              <label class="field grow">Comment <em>optional</em><input id="fb-comment" type="text" placeholder="e.g. local defect, not edge"></label>
+              <button class="btn primary" id="fb-send">Submit correction</button>
+            </div>
+            <div class="fb-done hidden" id="fb-done"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= UPLOAD ================= -->
+    <section class="view" id="view-upload">
+      <header class="page-h">
+        <div>
+          <div class="crumb">Analysis</div>
+          <h1>Upload Wafers</h1>
+          <p class="page-sub">Bring your own wafer maps. Files are validated on the server and previewed here; then inspect a single wafer or replay them all as a lot with drift detection and a cost decision.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn" id="u-sample"><svg><use href="#i-layers"/></svg>Try sample wafers</button>
+        </div>
+      </header>
+
+      <label class="dropzone card" id="u-drop">
+        <input type="file" id="u-input" multiple accept=".json,.csv,.txt,.tsv,.npy,.npz,.png,.jpg,.jpeg,.bmp,.webp">
+        <div class="dz-icon"><svg><use href="#i-upload"/></svg></div>
+        <div class="dz-title">Drop wafer files here or <span class="link">browse</span></div>
+        <div class="dz-sub">Up to 200 wafers per upload · 20 MB per file</div>
+        <div class="dz-formats">
+          <span class="chip neutral">JSON</span><span class="chip neutral">CSV / TXT</span><span class="chip neutral">NPY / NPZ</span><span class="chip neutral">PNG / JPG</span>
+        </div>
+      </label>
+
+      <details class="card formats">
+        <summary><h3>Supported formats</h3><span class="muted small">Encoding: 0 = no die (background) · 1 = pass die · 2 = fail die. Any grid size; maps are resized to 64 × 64.</span></summary>
+        <div class="fmt-grid">
+          <div><b>JSON</b><p>A 2-D array, <code>{"wafer": [[…]]}</code>, a list of those, or <code>{"wafers": [{"wafer_id": "W1", "wafer": [[…]]}, …]}</code>.</p></div>
+          <div><b>CSV / TXT</b><p>One row per line, values separated by commas, spaces or tabs. Several wafers: separate blocks with a blank line; a line like <code># W1</code> names the next wafer.</p></div>
+          <div><b>NPY / NPZ</b><p>A 2-D array (one wafer) or a 3-D stack <code>(N, H, W)</code>. Pickled object arrays are rejected.</p></div>
+          <div><b>Images</b><p>A rendered wafer map in three colours. Background is taken from the image border, the warmer colour is read as fail. Always check the preview.</p></div>
+        </div>
+        <div class="fmt-dl">Download a sample with one real wafer per defect class:
+          <a class="btn sm" id="u-dl-json" download>JSON</a><a class="btn sm" id="u-dl-csv" download>CSV</a></div>
+      </details>
+
+      <div class="card u-errors hidden" id="u-errors"></div>
+
+      <div class="hidden" id="u-work">
+        <div class="card toolbar">
+          <div class="u-count"><b id="u-count">0</b> wafers ready<span class="muted small" id="u-summary"></span></div>
+          <label class="field">Lot ID<input id="u-lot" type="text"></label>
+          <label class="switch"><input type="checkbox" id="u-llm" checked><span></span>AI root-cause analysis on alarm</label>
+          <button class="btn" id="u-clear">Clear all</button>
+          <button class="btn primary" id="u-run"><svg><use href="#i-play"/></svg>Run as lot</button>
+        </div>
+        <div class="up-grid" id="u-grid"></div>
+      </div>
+    </section>
+
+    <!-- ================= REVIEW LOG ================= -->
+    <section class="view" id="view-feedback">
+      <header class="page-h">
+        <div>
+          <div class="crumb">Analysis</div>
+          <h1>Review Log</h1>
+          <p class="page-sub">Engineer confirmations and corrections of model predictions.</p>
+        </div>
+        <div class="page-actions"><button class="btn" id="f-refresh"><svg><use href="#i-refresh"/></svg>Refresh</button></div>
+      </header>
+      <div class="kpis kpis-3" id="f-kpis"></div>
+      <div class="card flush">
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>ID</th><th>Timestamp</th><th>Wafer</th><th>Predicted</th><th>Review</th><th>Correct class</th><th>Comment</th></tr></thead>
+            <tbody id="f-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="loading hidden" id="loading">
+  <div class="loading-box"><div class="spinner"></div><div><div class="loading-title" id="loading-text">Analyzing…</div><div class="muted small" id="loading-sub"></div></div></div>
+</div>
+<div class="toast hidden" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
