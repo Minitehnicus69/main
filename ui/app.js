@@ -123,19 +123,13 @@ function setSource(src) {
 // ---------- startup ----------
 async function init() {
   $("fb-class").innerHTML = CLASSES.map((c) => `<option value="${c}">${label(c)}</option>`).join("");
-  $("st-api").textContent = "API · " + API_LABEL.replace(/^https?:\/\//, "");
-  $("st-api").title = API_LABEL;
   syncSliders();
   try {
     const h = await api("/health");
-    setSys("st-model", h.mode === "model" ? "on" : "warn", h.mode === "model" ? `${(h.history / 1000).toFixed(1)}k wafers` : "Demo data");
-    setSys("st-rag", h.rag ? "on" : "off", h.rag ? "Online" : "Offline");
-    setSys("st-llm", h.llm_model ? "on" : "off", h.llm_model || "Offline");
     $("a-hist").max = Math.max(0, h.history - 1);
     $("a-hist-info").textContent = h.history ? `0 – ${(h.history - 1).toLocaleString("en-US")}` : "";
     if (h.error) toast("Vision model unavailable; the API is serving demo data. " + h.error);
   } catch (e) {
-    ["st-model", "st-rag", "st-llm"].forEach((id) => setSys(id, "off", "Offline"));
     toast("API unavailable: " + e.message);
     $("o-lots").innerHTML = `<tr><td colspan="7" class="empty-row">No WaferSight API at <span class="mono">${esc(API_LABEL)}</span>.<br>${esc(e.message)}</td></tr>`;
     return;
@@ -149,13 +143,6 @@ async function init() {
   lotInfo();
   if (state.lots.some((l) => l.lot_id === "B")) { $("a-lot").value = "B"; fillWafers(); $("a-wafer").value = "B_w10"; }
   loadOverview();
-}
-
-function setSys(id, cls, text) {
-  const row = $(id);
-  row.className = "sys-row " + cls;
-  row.querySelector("b").textContent = text;
-  row.title = text;
 }
 
 function fillWafers() {
