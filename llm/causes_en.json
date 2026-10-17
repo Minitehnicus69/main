@@ -1,0 +1,68 @@
+{
+  "Center": {
+    "causes": [
+      "Non-uniform film deposition (CVD/PVD)",
+      "Asymmetric pressure during chemical-mechanical polishing (CMP)",
+      "Thermal variation at the centre of the heater platen"
+    ],
+    "check": "Check the central gas nozzles in the process chamber and the flatness of the CMP head."
+  },
+  "Donut": {
+    "causes": [
+      "Ring-shaped thermal profile or excessive radial gradient on the heater platen",
+      "Turbulent gas flow at the edge of the central zone in the deposition reactor",
+      "Non-uniform slurry distribution in the CMP process"
+    ],
+    "check": "Inspect the concentric heating zones of the susceptor and the CMP slurry distribution system."
+  },
+  "Edge-Ring": {
+    "causes": [
+      "Focus ring erosion in plasma etch",
+      "Insufficient helium backside cooling at the edge of the electrostatic chuck (ESC)"
+    ],
+    "check": "Inspect the focus ring in the etch chamber and the edge helium pressure."
+  },
+  "Edge-Loc": {
+    "causes": [
+      "Aggressive mechanical contact on the wafer edge during transfer",
+      "Localised thermal stress at the clamping points"
+    ],
+    "check": "Check the aligner pins and the gripping force of the mechanical arm."
+  },
+  "Loc": {
+    "causes": [
+      "Local defects on the photolithography mask (reticle contamination)",
+      "Particle adhesion during UV exposure or localised non-uniform deposition",
+      "Localised blockage of the post-etch rinse nozzles"
+    ],
+    "check": "Inspect the photolithography reticle and check the rinse nozzles in the process chamber."
+  },
+  "Near-full": {
+    "causes": [
+      "Widespread process failure (total vacuum loss or critical RF power variation)",
+      "Massive contamination of the chemical reactant supply line",
+      "Severe lithography calibration error across the whole wafer"
+    ],
+    "check": "Stop the process tool immediately, check the plasma RF generator and the vacuum chamber integrity."
+  },
+  "Random": {
+    "causes": [
+      "Airborne particle contamination in the cleanroom",
+      "HEPA/ULPA filter failure above the workstation"
+    ],
+    "check": "Measure particle concentration in the enclosure and check the laminar airflow."
+  },
+  "Scratch": {
+    "causes": [
+      "Scratching caused by the wafer-handling robot arm",
+      "Residual abrasive particles on the vacuum pads"
+    ],
+    "check": "Inspect the robot arm path and clean the vacuum contact pads."
+  },
+  "none": {
+    "causes": [
+      "Nominal operating parameters, no deviations detected"
+    ],
+    "check": "Release the lot to the next process step."
+  }
+}

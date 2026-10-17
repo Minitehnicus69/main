@@ -24,8 +24,8 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-# Fără descărcări de pe HuggingFace la pornire; dacă RAG-ul nu are modelul local, tools.py cade pe causes.json.
-os.environ.setdefault("HF_HUB_OFFLINE", "1")
+# Modelul de embedding pentru RAG (all-MiniLM-L6-v2) se descarcă o singură dată, apoi vine din cache-ul HF.
+# Pe un server fără internet: HF_HUB_OFFLINE=1 și cache-ul copiat dinainte.
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
@@ -37,7 +37,7 @@ LOT_SIZE = 25          # loturile din data/lots.json au 25 de wafere
 DRIFT_WINDOW, DRIFT_MIN = 5, 3
 
 _lock = threading.Lock()   # modelul (și hook-urile Grad-CAM) nu sunt sigure la apeluri paralele
-_state = {"ready": False, "error": None}
+_state = {"ready": False, "error": None, "rag": False, "rag_error": None}
 T = A = P = S = U = G = None
 
 
@@ -63,7 +63,22 @@ def _boot():
     except Exception as e:
         _state["error"] = repr(e)
         log.warning("model indisponibil, răspund cu mock: %r", e)
+        return False
+    _boot_rag()
     return _state["ready"]
+
+
+def _boot_rag():
+    """Construiește indexul RAG la pornire, nu la prima cerere. Dacă nu merge, agentul folosește causes.json."""
+    try:
+        from llm import rag
+        if rag.index is None:
+            rag.build_index([])
+        _state["rag"] = True
+        log.info("RAG pornit: %d fragmente în index", rag.index.ntotal)
+    except Exception as e:
+        _state["rag_error"] = repr(e)
+        log.warning("RAG indisponibil, folosesc causes.json: %r", e)
 
 
 def status():
@@ -71,7 +86,8 @@ def status():
     return {"mode": "model" if ready else "mock", "error": _state["error"],
             "history": len(T._MAPS) if ready else 0,
             "lots": {k: len(v) for k, v in T._LOTS.items()} if ready else {},
-            "llm_model": A.MODEL_NAME if ready else None}
+            "llm_model": A.MODEL_NAME if ready else None,
+            "rag": _state["rag"], "rag_error": _state["rag_error"]}
 
 
 def mock_response(wafer_id):
@@ -204,6 +220,18 @@ def _track(lot, wafer_id, cls):
     return _drift_from(list(hist.values())[-DRIFT_WINDOW:])
 
 
+def _window(lot, wafer_id):
+    ids = list(_lot_state[lot])
+    k = ids.index(wafer_id)
+    return _drift_from([_lot_state[lot][i] for i in ids[max(0, k - DRIFT_WINDOW + 1):k + 1]])
+
+
+def sample_wafers():
+    """Wafere reale din istoric, câte unul pe clasă: fișierul de exemplu pentru pagina de upload."""
+    from api import upload
+    return upload.sample_wafers(T._MAPS, S._H["labels"], S._H["classes"])
+
+
 def _gradcam_png(m):
     import matplotlib
     matplotlib.use("Agg")
@@ -270,7 +298,7 @@ def _resolve(wafer_id, wafer):
 
 
 def analyze(wafer_id, wafer=None, lot_id=None, use_llm=True, include_gradcam=True,
-            cost_params=None, drift=None, remaining=None):
+            cost_params=None, drift=None, remaining=None, lang="ro"):
     m, hid = _resolve(wafer_id, wafer)
     from_history = hid is not None
     lot = lot_id or (T.lot_of(wafer_id) if from_history else None)
@@ -280,6 +308,8 @@ def analyze(wafer_id, wafer=None, lot_id=None, use_llm=True, include_gradcam=Tru
         if drift is None:
             if lot in T._LOTS and wafer_id in {w["wafer_id"] for w in T._LOTS[lot]}:
                 drift = T.tool_verifica_drift(lot, wafer_id)
+            elif lot in _lot_state and wafer_id in _lot_state[lot]:
+                drift = _window(lot, wafer_id)      # wafer dintr-un lot deja rulat: fereastra de la poziția lui
             elif lot:
                 drift = _track(lot, wafer_id, clf["class"])
             else:
@@ -289,6 +319,7 @@ def analyze(wafer_id, wafer=None, lot_id=None, use_llm=True, include_gradcam=Tru
 
     # De aici, aceeași logică de decizie ca în llm/agent.analyze()
     w = wafer_id
+    ai = False   # True doar dacă textul vine efectiv de la LLM (nu din răspunsul determinist)
     manual, target, acord, incert = [], None, 1.0, False
     if not clf["unknown"]:
         acord = (sum(1 for s in sim if s["clasa"] == clf["class"]) / len(sim)) if sim else 0.0
@@ -305,17 +336,18 @@ def analyze(wafer_id, wafer=None, lot_id=None, use_llm=True, include_gradcam=Tru
              "manual": [{"doc": x["doc"], "page": x["page"], "text": x["text"][:400]} for x in manual]}
 
     if clf["unknown"]:
-        text, surse = A._local(clf, drift, sim_facts, w, lot), []
+        text, surse = A._local(clf, drift, sim_facts, w, lot, lang), []
     elif incert:
-        text, surse = A._incert(clf, sim_facts, w), []
+        text, surse = A._incert(clf, sim_facts, w, lang), []
     else:
         try:
             if not use_llm:
                 raise RuntimeError("use_llm=False")
-            text = A._llm(facts)
+            text = A._llm(facts, lang)
+            ai = True
         except Exception as e:
             log.info("fără LLM pentru %s: %s", w, e)
-            text = A._local(clf, drift, sim_facts, w, lot)
+            text = A._local(clf, drift, sim_facts, w, lot, lang)
         surse = A._surse(manual, target)
     if not lot:   # wafer trimis fără lot (ex. din UI): textul determinist al agentului ar scrie "din lotul None"
         text = {k: v.replace(" din lotul None", "") for k, v in text.items()}
@@ -335,10 +367,11 @@ def analyze(wafer_id, wafer=None, lot_id=None, use_llm=True, include_gradcam=Tru
         "cost": cost(_p_defect(clf, drift), rem, cost_params),
         "wafer": m.tolist(),
         "gradcam_png": cam,
+        "ai_generated": ai,
     }
 
 
-def analyze_lot(lot_id, wafers=None, use_llm=True, include_maps=True, cost_params=None):
+def analyze_lot(lot_id, wafers=None, use_llm=True, include_maps=True, cost_params=None, lang="ro"):
     if wafers is None:
         if lot_id not in T._LOTS:
             raise ValueError(f"lot necunoscut: {lot_id}; trimite și lista 'wafers'")
@@ -372,6 +405,6 @@ def analyze_lot(lot_id, wafers=None, use_llm=True, include_maps=True, cost_param
         k, d = first
         wf = wafers[k]
         res = analyze(wf["wafer_id"], wf.get("wafer"), lot_id, use_llm=use_llm, include_gradcam=True,
-                      cost_params=cost_params, drift=d, remaining=len(items) - k - 1)
+                      cost_params=cost_params, drift=d, remaining=len(items) - k - 1, lang=lang)
         out["alarm_analysis"], out["cost"] = res, res["cost"]
     return out

@@ -44,6 +44,26 @@ Reguli:
 6. Răspunde STRICT cu un obiect JSON, fără markdown: {"explicatie": "...", "actiune": "..."}
 Scrie scurt, în română, pe înțelesul unui tehnician de tură."""
 
+# lang="en" (UI-ul în engleză): alt tabel de cauze și răspuns în engleză. "ro" rămâne implicit, cu același cache.
+try:
+    CAUSES_EN = json.loads((HERE / "causes_en.json").read_text(encoding="utf-8"))
+except Exception:
+    CAUSES_EN = {}
+
+
+def _causes(lang):
+    return (CAUSES_EN or T.CAUSES) if lang == "en" else T.CAUSES
+
+
+def _prompt(lang):
+    if lang != "en":
+        return PROMPT
+    return PROMPT.replace("Scrie scurt, în română, pe înțelesul unui tehnician de tură.",
+                          'Write briefly, in English, so a shift technician can understand it. '
+                          'Describe the facts in plain language and never quote internal field names '
+                          '(such as acord_vecini or drift.alarm). '
+                          'Keep the JSON keys "explicatie" and "actiune" but write their values in English.')
+
 # Cache pe disc: fiecare răspuns Qwen se cere o singură dată (cheia include modelul și prompt-ul).
 CACHE_FILE = HERE / "llm_cache.json"
 try:
@@ -59,8 +79,8 @@ def _save_cache():
         log.warning("nu am putut salva cache-ul: %s", e)
 
 
-def _key(facts):
-    raw = MODEL_NAME + "|" + EFFORT + "|" + PROMPT + "|" + json.dumps(facts, sort_keys=True, default=str)
+def _key(facts, prompt=PROMPT):
+    raw = MODEL_NAME + "|" + EFFORT + "|" + prompt + "|" + json.dumps(facts, sort_keys=True, default=str)
     return hashlib.sha1(raw.encode("utf-8")).hexdigest()
 
 
@@ -81,11 +101,17 @@ def _surse(manual, target):
     return out
 
 
-def _incert(clf, sim, w):
+def _incert(clf, sim, w, lang="ro"):
     """Clasificare nesigură (încredere mică, vecinii nu confirmă): fără acțiune pe echipament, fără LLM."""
     c, conf = clf["class"], clf["confidence"]
     same = sum(1 for s in sim if s["clasa"] == c)
     rest = Counter(s["clasa"] for s in sim if s["clasa"] != c)
+    if lang == "en":
+        others = ", ".join(f"{k} ({v})" for k, v in rest.most_common(3)) or "none"
+        return {"explicatie": (f"The classification of wafer {w} is uncertain: the CNN predicts '{c}' at {conf * 100:.0f}%, "
+                               f"but only {same} of the {len(sim)} most similar historical wafers share that class "
+                               f"(others: {others}). This is not enough to justify an equipment intervention."),
+                "actiune": "Inspect the wafer visually before any intervention. Do not stop or adjust the tool based on this classification."}
     altele = ", ".join(f"{k} ({v})" for k, v in rest.most_common(3)) or "niciuna"
     return {"explicatie": (f"Clasificarea wafer-ului {w} e nesigură: CNN-ul zice '{c}' cu {conf * 100:.0f}%, iar dintre "
                            f"cele {len(sim)} wafere cele mai asemănătoare din istoric doar {same} au aceeași clasă "
@@ -93,10 +119,12 @@ def _incert(clf, sim, w):
             "actiune": "Verifică wafer-ul vizual înainte de orice intervenție. Nu opri și nu modifica echipamentul pe baza acestei clasificări."}
 
 
-def _local(clf, drift, sim, w, lot):
+def _local(clf, drift, sim, w, lot, lang="ro"):
     """Răspuns determinist: pentru necunoscut, pentru wafere banale și ca rezervă dacă LLM-ul nu răspunde."""
     c, conf = clf["class"], clf["confidence"]
     pct = f"{conf * 100:.0f}%"
+    if lang == "en":
+        return _local_en(clf, drift, sim, w, lot, c, pct)
     if clf["unknown"]:
         return {"explicatie": (f"Wafer-ul {w} nu seamănă suficient cu niciun pattern cunoscut "
                                f"(cel mai apropiat: {clf['nearest_class']}). CNN-ul zice '{c}' cu {pct}, "
@@ -118,6 +146,30 @@ def _local(clf, drift, sim, w, lot):
             "actiune": f"Verificare sugerată pentru '{c}': {check}"}
 
 
+def _local_en(clf, drift, sim, w, lot, c, pct):
+    causes = _causes("en")
+    in_lot = f" in lot {lot}" if lot else ""
+    if clf["unknown"]:
+        return {"explicatie": (f"Wafer {w} does not sufficiently match any known pattern "
+                               f"(closest: {clf['nearest_class']}). The CNN predicts '{c}' at {pct}, "
+                               f"but confidence is not meaningful in this case."),
+                "actiune": "Unknown pattern: escalate to the process engineer. Do not assume a root cause."}
+    if drift["alarm"]:
+        rc = drift["repeated_class"]
+        check = causes.get(rc, {}).get("check", "inspection according to procedure")
+        return {"explicatie": (f"Drift alarm{in_lot}: '{rc}' appears on at least 3 of the last 5 wafers "
+                               f"(current wafer: {w}, '{c}', {pct}). This points to a process issue, not an isolated wafer."),
+                "actiune": f"Hold the lot and inspect the equipment. Suggested check for '{rc}': {check}"}
+    if c == "none":
+        return {"explicatie": f"Wafer {w}{in_lot} looks nominal (class 'none', {pct}). No drift alarm.",
+                "actiune": "Can proceed to the next station."}
+    check = causes.get(c, {}).get("check", "inspection according to standard procedure")
+    same = sum(1 for s in sim if s["clasa"] == c)
+    agree = f" Of the {len(sim)} most similar historical wafers, {same} share the same class." if sim else ""
+    return {"explicatie": f"Wafer {w}{in_lot} shows an isolated '{c}' defect ({pct}). No drift alarm.{agree}",
+            "actiune": f"Suggested check for '{c}': {check}"}
+
+
 def _parse(text):
     a, b = text.find("{"), text.rfind("}")
     if a < 0 or b <= a:
@@ -130,8 +182,9 @@ def _parse(text):
     return {"explicatie": d["explicatie"], "actiune": d["actiune"]} if ok else None
 
 
-def _llm(facts):
-    k = _key(facts)
+def _llm(facts, lang="ro"):
+    prompt = _prompt(lang)
+    k = _key(facts, prompt)
     if k in _cache:
         log.info("răspuns din cache")
         return _cache[k]
@@ -140,14 +193,17 @@ def _llm(facts):
     r = client.chat.completions.create(
         model=MODEL_NAME,
         messages=[
-            {"role": "system", "content": PROMPT.replace("__CAUZE__", json.dumps(T.CAUSES, ensure_ascii=False))},
+            {"role": "system", "content": prompt.replace("__CAUZE__", json.dumps(_causes(lang), ensure_ascii=False))},
             {"role": "user", "content": "Fapte verificate de unelte:\n" + json.dumps(facts, ensure_ascii=False, default=str)
                                         + "\nScrie răspunsul final în JSON."},
         ],
         temperature=0.1,
         max_tokens=MAX_TOKENS,
         response_format={"type": "json_object"},
-        extra_body={"reasoning_effort": EFFORT},
+        # Flash-Next ignoră uneori reasoning_effort="none" și gândește până la max_tokens (răspuns gol, ~45 s);
+        # enable_thinking=False oprește gândirea sigur (~7 s).
+        extra_body={"reasoning_effort": EFFORT,
+                    **({"chat_template_kwargs": {"enable_thinking": False}} if EFFORT == "none" else {})},
     )
     res = _parse(r.choices[0].message.content or "")
     if res is None:
