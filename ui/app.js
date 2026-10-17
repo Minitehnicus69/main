@@ -1,5 +1,19 @@
-// WaferSight UI. Talks only to the API (same server; use ?api=http://host:8000 for a different one).
-const API = new URLSearchParams(location.search).get("api") || "";
+// WaferSight UI. Talks only to the API. Where the API lives, first match wins:
+// 1. ?api=https://host in the page URL (remembered in this browser; an empty ?api= forgets it)
+// 2. window.WAFERSIGHT_API from config.js (set it when the UI is hosted apart from the backend, e.g. Cloudflare Pages)
+// 3. the same server that serves this page
+const API = resolveApi();
+const API_LABEL = API || location.origin;
+
+function resolveApi() {
+  const q = new URLSearchParams(location.search).get("api");
+  let saved = null;
+  try {
+    if (q !== null) (q ? localStorage.setItem("wafersight.api", q) : localStorage.removeItem("wafersight.api"));
+    saved = localStorage.getItem("wafersight.api");
+  } catch { /* storage blocked */ }
+  return (q || saved || window.WAFERSIGHT_API || "").trim().replace(/\/+$/, "");
+}
 const LANG = "en";
 const CLASSES = ["Center", "Donut", "Edge-Loc", "Edge-Ring", "Loc", "Near-full", "Random", "Scratch", "none"];
 const CLASS_COLORS = {
@@ -21,15 +35,25 @@ const state = {
 };
 
 // ---------- API ----------
-async function api(path, body) {
-  const opts = body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
-  const r = await fetch(API + path, opts);
-  if (!r.ok) {
-    let msg = r.statusText;
-    try { const j = await r.json(); msg = typeof j.detail === "string" ? j.detail : JSON.stringify(j.detail); } catch { /* not JSON */ }
-    throw new Error(`${r.status} ${msg}`);
+async function request(path, opts = {}) {
+  let r;
+  try {
+    r = await fetch(API + path, opts);
+  } catch {
+    throw new Error(`cannot reach the API at ${API_LABEL} (server down, wrong address or blocked by CORS).`);
   }
-  return r.json();
+  // A static host (Cloudflare Pages, Netlify...) answers unknown paths with index.html instead of JSON.
+  if (!(r.headers.get("content-type") || "").includes("application/json")) {
+    throw new Error(`${API_LABEL} answered ${r.status} with a web page instead of the WaferSight API. `
+      + "Set the backend address in config.js or open the page with ?api=https://your-backend.");
+  }
+  const body = await r.json();
+  if (!r.ok) throw new Error(`${r.status} ${typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail)}`);
+  return body;
+}
+
+function api(path, body) {
+  return request(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 }
 
 function loading(on, title = "Analyzing…", sub = "") {
@@ -99,6 +123,8 @@ function setSource(src) {
 // ---------- startup ----------
 async function init() {
   $("fb-class").innerHTML = CLASSES.map((c) => `<option value="${c}">${label(c)}</option>`).join("");
+  $("st-api").textContent = "API · " + API_LABEL.replace(/^https?:\/\//, "");
+  $("st-api").title = API_LABEL;
   syncSliders();
   try {
     const h = await api("/health");
@@ -110,8 +136,8 @@ async function init() {
     if (h.error) toast("Vision model unavailable; the API is serving demo data. " + h.error);
   } catch (e) {
     ["st-model", "st-rag", "st-llm"].forEach((id) => setSys(id, "off", "Offline"));
-    toast("Cannot reach the API: " + e.message);
-    $("o-lots").innerHTML = `<tr><td colspan="7" class="empty-row">API unavailable.</td></tr>`;
+    toast("API unavailable: " + e.message);
+    $("o-lots").innerHTML = `<tr><td colspan="7" class="empty-row">No WaferSight API at <span class="mono">${esc(API_LABEL)}</span>.<br>${esc(e.message)}</td></tr>`;
     return;
   }
   try { state.lots = await api("/lots"); } catch { state.lots = []; }
@@ -585,13 +611,7 @@ async function uploadFiles(files) {
   if (files.length) {
     loading(true, `Reading ${files.length} file${files.length > 1 ? "s" : ""}`, "Parsing and validating wafer maps…");
     try {
-      const r = await fetch(API + "/upload", { method: "POST", body: fd });
-      if (!r.ok) {
-        let msg = r.statusText;
-        try { const j = await r.json(); msg = typeof j.detail === "string" ? j.detail : JSON.stringify(j.detail); } catch { /* not JSON */ }
-        throw new Error(`${r.status} ${msg}`);
-      }
-      res = await r.json();
+      res = await request("/upload", { method: "POST", body: fd });
     } catch (e) {
       toast("Upload failed: " + e.message);
       return;
