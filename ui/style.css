@@ -121,8 +121,6 @@ em { font-style: normal; color: var(--muted); font-weight: 400; }
 .sys-row.on i { background: #34d399; box-shadow: 0 0 0 3px rgba(52, 211, 153, .15); }
 .sys-row.off i { background: #f87171; }
 .sys-row.warn i { background: #fbbf24; }
-.sys-api { font-family: var(--mono); font-size: 10.5px; color: #5b6c89; padding: 6px 10px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
 .main { padding: 26px 32px 56px; max-width: 1480px; width: 100%; }
 .view { display: none; }
 .view.active { display: block; animation: fade .18s ease-out; }

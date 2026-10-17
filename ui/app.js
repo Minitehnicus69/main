@@ -122,10 +122,7 @@ function setSource(src) {
 
 // ---------- startup ----------
 async function init() {
-  $("fb-class").innerHTML = CLASSES.map((c) => `<option value="${c}">${label(c)}</option>`).join("");
-  $("st-api").textContent = "API · " + API_LABEL.replace(/^https?:\/\//, "");
-  $("st-api").title = API_LABEL;
-  syncSliders();
+  $("fb-class").innerHTML = CLASSES.map((c) => `<option value="${c}">${label(c)}</option>`).join("");  syncSliders();
   try {
     const h = await api("/health");
     setSys("st-model", h.mode === "model" ? "on" : "warn", h.mode === "model" ? `${(h.history / 1000).toFixed(1)}k wafers` : "Demo data");
